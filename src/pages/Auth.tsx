@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ForgotPasswordDialog } from '@/components/auth/ForgotPasswordDialog';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { useLoginTracking } from '@/hooks/useLoginTracking';
+import { Capacitor } from '@capacitor/core';
 import logo from '@/assets/sm-data-logo.jpeg';
 
 const signUpSchema = z.object({
@@ -44,6 +45,19 @@ export default function Auth() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { trackLogin } = useLoginTracking();
+
+  // Block web access - redirect to website with download prompt
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) {
+      // Web browser detected - redirect to website
+      toast({
+        variant: 'destructive',
+        title: 'Mobile App Required',
+        description: 'Please download the SM Data App to login or create an account.',
+      });
+      navigate('/website', { replace: true });
+    }
+  }, [navigate, toast]);
   const { 
     isEnabled: biometricEnabled, 
     isAvailable: biometricAvailable,
