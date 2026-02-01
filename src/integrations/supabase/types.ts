@@ -591,6 +591,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      block_all_web_users: { Args: never; Returns: undefined }
       generate_account_number: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
       has_role: {
