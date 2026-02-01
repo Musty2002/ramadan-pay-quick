@@ -27,7 +27,9 @@ import {
   Eye, 
   Wallet,
   UserCog,
-  MoreVertical
+  MoreVertical,
+  Ban,
+  UserCheck
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -46,6 +48,9 @@ interface User {
   phone: string;
   account_number: string;
   created_at: string;
+  is_blocked?: boolean;
+  blocked_reason?: string | null;
+  blocked_at?: string | null;
   wallet?: { balance: number };
   roles?: { role: string }[];
 }
@@ -59,6 +64,11 @@ export default function UsersManagement() {
   const [fundAmount, setFundAmount] = useState('');
   const [fundType, setFundType] = useState<'credit' | 'debit'>('credit');
   const [processing, setProcessing] = useState(false);
+  
+  // Block user state
+  const [blockDialogOpen, setBlockDialogOpen] = useState(false);
+  const [blockReason, setBlockReason] = useState('');
+  const [blockAction, setBlockAction] = useState<'block' | 'unblock'>('block');
 
   useEffect(() => {
     fetchUsers();
@@ -67,7 +77,7 @@ export default function UsersManagement() {
   const fetchUsers = async () => {
     try {
       const [{ data: profiles }, { data: wallets }, { data: roles }] = await Promise.all([
-        supabase.from('profiles').select('*').order('created_at', { ascending: false }),
+        supabase.from('profiles').select('*, is_blocked, blocked_reason, blocked_at').order('created_at', { ascending: false }),
         supabase.from('wallets').select('user_id, balance'),
         supabase.from('user_roles').select('user_id, role')
       ]);
@@ -175,6 +185,48 @@ export default function UsersManagement() {
     }
   };
 
+  const handleBlockUser = async () => {
+    if (!selectedUser) return;
+    setProcessing(true);
+
+    try {
+      if (blockAction === 'block') {
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            is_blocked: true,
+            blocked_at: new Date().toISOString(),
+            blocked_reason: blockReason || 'Violation of terms of service'
+          })
+          .eq('user_id', selectedUser.user_id);
+
+        if (error) throw error;
+        toast.success(`${selectedUser.full_name} has been blocked`);
+      } else {
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            is_blocked: false,
+            blocked_at: null,
+            blocked_reason: null
+          })
+          .eq('user_id', selectedUser.user_id);
+
+        if (error) throw error;
+        toast.success(`${selectedUser.full_name} has been unblocked`);
+      }
+
+      setBlockDialogOpen(false);
+      setBlockReason('');
+      fetchUsers();
+    } catch (error) {
+      console.error('Error updating user block status:', error);
+      toast.error('Failed to update user status');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   const filteredUsers = users.filter(user => 
     user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -220,6 +272,7 @@ export default function UsersManagement() {
                   <TableHead>User</TableHead>
                   <TableHead>Account No.</TableHead>
                   <TableHead>Balance</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Joined</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -228,23 +281,37 @@ export default function UsersManagement() {
               <TableBody>
                 {filteredUsers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                    <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                       No users found
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredUsers.map((user) => (
-                    <TableRow key={user.id}>
+                    <TableRow key={user.id} className={user.is_blocked ? 'bg-destructive/5' : ''}>
                       <TableCell>
-                        <div>
-                          <p className="font-medium">{user.full_name}</p>
-                          <p className="text-sm text-gray-500">{user.email}</p>
-                          <p className="text-xs text-gray-400">{user.phone}</p>
+                        <div className="flex items-start gap-2">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium">{user.full_name}</p>
+                              {user.is_blocked && (
+                                <Badge variant="destructive" className="text-xs">Blocked</Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-500">{user.email}</p>
+                            <p className="text-xs text-gray-400">{user.phone}</p>
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell className="font-mono">{user.account_number}</TableCell>
                       <TableCell className="font-medium">
                         ₦{(user.wallet?.balance || 0).toLocaleString()}
+                      </TableCell>
+                      <TableCell>
+                        {user.is_blocked ? (
+                          <Badge variant="destructive">Blocked</Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-green-600 border-green-600">Active</Badge>
+                        )}
                       </TableCell>
                       <TableCell>
                         {user.roles?.some(r => r.role === 'admin') ? (
@@ -284,6 +351,32 @@ export default function UsersManagement() {
                               <UserCog className="w-4 h-4 mr-2" />
                               {user.roles?.some(r => r.role === 'admin') ? 'Remove Admin' : 'Make Admin'}
                             </DropdownMenuItem>
+                            {user.is_blocked ? (
+                              <DropdownMenuItem 
+                                onClick={() => {
+                                  setSelectedUser(user);
+                                  setBlockAction('unblock');
+                                  setBlockDialogOpen(true);
+                                }}
+                                className="text-green-600"
+                              >
+                                <UserCheck className="w-4 h-4 mr-2" />
+                                Unblock User
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem 
+                                onClick={() => {
+                                  setSelectedUser(user);
+                                  setBlockAction('block');
+                                  setBlockReason('');
+                                  setBlockDialogOpen(true);
+                                }}
+                                className="text-destructive"
+                              >
+                                <Ban className="w-4 h-4 mr-2" />
+                                Block User
+                              </DropdownMenuItem>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -339,6 +432,73 @@ export default function UsersManagement() {
                 </>
               ) : (
                 `${fundType === 'credit' ? 'Fund' : 'Debit'} Wallet`
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Block/Unblock Dialog */}
+      <Dialog open={blockDialogOpen} onOpenChange={setBlockDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className={blockAction === 'block' ? 'text-destructive' : 'text-green-600'}>
+              {blockAction === 'block' ? 'Block User' : 'Unblock User'}
+            </DialogTitle>
+            <DialogDescription>
+              {blockAction === 'block' 
+                ? `This will suspend ${selectedUser?.full_name}'s account. They won't be able to access the app.`
+                : `This will restore ${selectedUser?.full_name}'s account access.`
+              }
+            </DialogDescription>
+          </DialogHeader>
+          
+          {blockAction === 'block' && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="blockReason">Reason for blocking</Label>
+                <Input
+                  id="blockReason"
+                  placeholder="e.g., Fraudulent activity, Terms violation..."
+                  value={blockReason}
+                  onChange={(e) => setBlockReason(e.target.value)}
+                />
+              </div>
+              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+                <p className="text-sm text-destructive">
+                  ⚠️ Warning: The user will see this reason when they try to access the app.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {blockAction === 'unblock' && selectedUser?.blocked_reason && (
+            <div className="py-4">
+              <div className="bg-secondary rounded-lg p-3">
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-medium">Block reason:</span> {selectedUser.blocked_reason}
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBlockDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleBlockUser}
+              disabled={processing}
+              variant={blockAction === 'block' ? 'destructive' : 'default'}
+              className={blockAction === 'unblock' ? 'bg-green-600 hover:bg-green-700' : ''}
+            >
+              {processing ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                blockAction === 'block' ? 'Block User' : 'Unblock User'
               )}
             </Button>
           </DialogFooter>

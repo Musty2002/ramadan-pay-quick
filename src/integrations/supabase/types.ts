@@ -255,10 +255,14 @@ export type Database = {
         Row: {
           account_number: string
           avatar_url: string | null
+          blocked_at: string | null
+          blocked_by: string | null
+          blocked_reason: string | null
           created_at: string
           email: string | null
           full_name: string
           id: string
+          is_blocked: boolean | null
           phone: string
           referral_code: string
           referred_by: string | null
@@ -269,10 +273,14 @@ export type Database = {
         Insert: {
           account_number: string
           avatar_url?: string | null
+          blocked_at?: string | null
+          blocked_by?: string | null
+          blocked_reason?: string | null
           created_at?: string
           email?: string | null
           full_name: string
           id?: string
+          is_blocked?: boolean | null
           phone: string
           referral_code: string
           referred_by?: string | null
@@ -283,10 +291,14 @@ export type Database = {
         Update: {
           account_number?: string
           avatar_url?: string | null
+          blocked_at?: string | null
+          blocked_by?: string | null
+          blocked_reason?: string | null
           created_at?: string
           email?: string | null
           full_name?: string
           id?: string
+          is_blocked?: boolean | null
           phone?: string
           referral_code?: string
           referred_by?: string | null
@@ -555,6 +567,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_user_blocked: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "user"

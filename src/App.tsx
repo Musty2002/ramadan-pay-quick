@@ -66,7 +66,7 @@ const queryClient = new QueryClient();
 const SESSION_UNLOCKED_KEY = 'session_unlocked';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading, profile } = useAuth();
+  const { user, loading, profile, isBlocked, signOut } = useAuth();
   const [isLocked, setIsLocked] = useState(true);
   const [checkingLock, setCheckingLock] = useState(true);
   const [showPinSetup, setShowPinSetup] = useState(false);
@@ -121,6 +121,17 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // Show blocked screen if user is suspended
+  if (isBlocked) {
+    const BlockedUserScreen = require('@/components/auth/BlockedUserScreen').BlockedUserScreen;
+    return (
+      <BlockedUserScreen
+        reason={(profile as any)?.blocked_reason}
+        onSignOut={signOut}
+      />
+    );
   }
 
   // Show lock screen if session is locked (on native platforms)
