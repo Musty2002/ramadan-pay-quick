@@ -3,13 +3,20 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile, Wallet, CashbackWallet } from '@/types/database';
 
+interface ExtendedProfile extends Profile {
+  is_blocked?: boolean;
+  blocked_at?: string | null;
+  blocked_reason?: string | null;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  profile: Profile | null;
+  profile: ExtendedProfile | null;
   wallet: Wallet | null;
   cashbackWallet: CashbackWallet | null;
   loading: boolean;
+  isBlocked: boolean;
   signUp: (email: string, password: string, fullName: string, phone: string, referralCode?: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -23,20 +30,22 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<ExtendedProfile | null>(null);
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [cashbackWallet, setCashbackWallet] = useState<CashbackWallet | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isBlocked, setIsBlocked] = useState(false);
 
   const fetchProfile = async (userId: string, retryCount = 0): Promise<void> => {
     const { data } = await supabase
       .from('profiles')
-      .select('*')
+      .select('*, is_blocked, blocked_at, blocked_reason')
       .eq('user_id', userId)
       .maybeSingle();
     
     if (data) {
-      setProfile(data as Profile);
+      setProfile(data as ExtendedProfile);
+      setIsBlocked(data.is_blocked === true);
     } else if (retryCount < 3) {
       // Retry after a short delay - the database trigger might not have completed yet
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -220,6 +229,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       wallet,
       cashbackWallet,
       loading,
+      isBlocked,
       signUp,
       signIn,
       signOut,
