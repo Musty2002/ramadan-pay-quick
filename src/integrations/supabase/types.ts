@@ -149,6 +149,39 @@ export type Database = {
         }
         Relationships: []
       }
+      login_sessions: {
+        Row: {
+          device_info: Json | null
+          id: string
+          ip_address: string | null
+          is_suspicious: boolean | null
+          logged_in_at: string
+          platform: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          device_info?: Json | null
+          id?: string
+          ip_address?: string | null
+          is_suspicious?: boolean | null
+          logged_in_at?: string
+          platform: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          device_info?: Json | null
+          id?: string
+          ip_address?: string | null
+          is_suspicious?: boolean | null
+          logged_in_at?: string
+          platform?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       notification_logs: {
         Row: {
           body: string
