@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { validateUserAccount } from '../_shared/validate-account.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -444,6 +445,15 @@ Deno.serve(async (req) => {
       if (!userId) {
         return new Response(JSON.stringify({ success: false, message: 'Authentication required' }), {
           status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Validate user account before allowing purchase
+      const accountValidation = await validateUserAccount(supabase, userId);
+      if (!accountValidation.valid) {
+        return new Response(JSON.stringify({ success: false, message: accountValidation.error }), {
+          status: 403,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
