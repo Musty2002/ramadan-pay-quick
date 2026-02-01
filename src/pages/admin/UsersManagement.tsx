@@ -29,7 +29,10 @@ import {
   UserCog,
   MoreVertical,
   Ban,
-  UserCheck
+  UserCheck,
+  Smartphone,
+  Monitor,
+  History
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -55,6 +58,15 @@ interface User {
   roles?: { role: string }[];
 }
 
+interface LoginSession {
+  id: string;
+  platform: string;
+  device_info: Record<string, unknown> | null;
+  user_agent: string | null;
+  logged_in_at: string;
+  is_suspicious: boolean;
+}
+
 export default function UsersManagement() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,6 +81,11 @@ export default function UsersManagement() {
   const [blockDialogOpen, setBlockDialogOpen] = useState(false);
   const [blockReason, setBlockReason] = useState('');
   const [blockAction, setBlockAction] = useState<'block' | 'unblock'>('block');
+
+  // Login sessions state
+  const [sessionsDialogOpen, setSessionsDialogOpen] = useState(false);
+  const [loginSessions, setLoginSessions] = useState<LoginSession[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -101,6 +118,26 @@ export default function UsersManagement() {
       toast.error('Failed to fetch users');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchLoginSessions = async (userId: string) => {
+    setSessionsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('login_sessions')
+        .select('*')
+        .eq('user_id', userId)
+        .order('logged_in_at', { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+      setLoginSessions((data || []) as unknown as LoginSession[]);
+    } catch (error) {
+      console.error('Error fetching login sessions:', error);
+      toast.error('Failed to fetch login sessions');
+    } finally {
+      setSessionsLoading(false);
     }
   };
 
@@ -347,6 +384,14 @@ export default function UsersManagement() {
                               <Wallet className="w-4 h-4 mr-2" />
                               Debit Wallet
                             </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                              setSelectedUser(user);
+                              fetchLoginSessions(user.user_id);
+                              setSessionsDialogOpen(true);
+                            }}>
+                              <History className="w-4 h-4 mr-2" />
+                              View Login Sessions
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => toggleAdminRole(user)}>
                               <UserCog className="w-4 h-4 mr-2" />
                               {user.roles?.some(r => r.role === 'admin') ? 'Remove Admin' : 'Make Admin'}
@@ -500,6 +545,104 @@ export default function UsersManagement() {
               ) : (
                 blockAction === 'block' ? 'Block User' : 'Unblock User'
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Login Sessions Dialog */}
+      <Dialog open={sessionsDialogOpen} onOpenChange={setSessionsDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <History className="w-5 h-5" />
+              Login Sessions - {selectedUser?.full_name}
+            </DialogTitle>
+            <DialogDescription>
+              Recent login activity for this user
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            {sessionsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            ) : loginSessions.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <History className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <p>No login sessions recorded yet</p>
+                <p className="text-sm">Sessions will appear here after the user logs in</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {loginSessions.map((session) => (
+                  <div 
+                    key={session.id} 
+                    className={`p-4 rounded-lg border ${session.is_suspicious ? 'border-destructive bg-destructive/5' : 'border-border bg-secondary/30'}`}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        {session.platform === 'android' ? (
+                          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                            <Smartphone className="w-5 h-5 text-green-600" />
+                          </div>
+                        ) : session.platform === 'ios' ? (
+                          <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                            <Smartphone className="w-5 h-5 text-gray-600" />
+                          </div>
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                            <Monitor className="w-5 h-5 text-blue-600" />
+                          </div>
+                        )}
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={
+                              session.platform === 'android' ? 'default' :
+                              session.platform === 'ios' ? 'secondary' : 'outline'
+                            }>
+                              {session.platform.toUpperCase()}
+                            </Badge>
+                            {session.is_suspicious && (
+                              <Badge variant="destructive">Suspicious</Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {format(new Date(session.logged_in_at), 'MMM d, yyyy h:mm a')}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    {session.device_info && (
+                      <div className="mt-3 text-xs text-muted-foreground bg-secondary/50 p-2 rounded">
+                        {session.platform === 'web' ? (
+                          <>
+                            {(session.device_info as Record<string, unknown>).isMobile && (
+                              <span className="text-orange-600 font-medium">Mobile Browser • </span>
+                            )}
+                            Screen: {(session.device_info as Record<string, unknown>).screenWidth}x{(session.device_info as Record<string, unknown>).screenHeight}
+                          </>
+                        ) : (
+                          <>
+                            {(session.device_info as Record<string, unknown>).manufacturer} {(session.device_info as Record<string, unknown>).model} • 
+                            OS {(session.device_info as Record<string, unknown>).osVersion}
+                            {(session.device_info as Record<string, unknown>).isVirtual && (
+                              <span className="text-orange-600 ml-2 font-medium">⚠️ Virtual Device</span>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSessionsDialogOpen(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

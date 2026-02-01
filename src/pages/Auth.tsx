@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { ForgotPasswordDialog } from '@/components/auth/ForgotPasswordDialog';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
+import { useLoginTracking } from '@/hooks/useLoginTracking';
 import logo from '@/assets/sm-data-logo.jpeg';
 
 const signUpSchema = z.object({
@@ -42,6 +43,7 @@ export default function Auth() {
   const { signIn, signUp } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { trackLogin } = useLoginTracking();
   const { 
     isEnabled: biometricEnabled, 
     isAvailable: biometricAvailable,
@@ -130,7 +132,7 @@ export default function Auth() {
         const isEmail = formData.identifier.includes('@');
         const loginEmail = isEmail ? formData.identifier : `${formData.identifier}@phone.local`;
         
-        const { error } = await signIn(loginEmail, formData.password);
+        const { error, data } = await signIn(loginEmail, formData.password);
         if (error) {
           toast({
             variant: 'destructive',
@@ -140,6 +142,10 @@ export default function Auth() {
               : error.message,
           });
         } else {
+          // Track login session
+          if (data?.user?.id) {
+            await trackLogin(data.user.id);
+          }
           // Save the user for next time
           setLastLoggedInUser(formData.identifier);
           navigate('/dashboard');
@@ -158,7 +164,7 @@ export default function Auth() {
           return;
         }
 
-        const { error } = await signUp(
+        const { error, data } = await signUp(
           formData.email,
           formData.password,
           formData.fullName,
@@ -181,6 +187,10 @@ export default function Auth() {
             });
           }
         } else {
+          // Track login session for new signup
+          if (data?.user?.id) {
+            await trackLogin(data.user.id);
+          }
           // Save the user for next time
           setLastLoggedInUser(formData.email);
           toast({
