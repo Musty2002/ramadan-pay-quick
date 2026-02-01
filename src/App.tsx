@@ -29,7 +29,7 @@ import Transfer from "./pages/Transfer";
 import AddMoney from "./pages/AddMoney";
 import BvnNin from "./pages/BvnNin";
 import Notifications from "./pages/Notifications";
-import WebAuth from "./pages/WebAuth";
+// WebAuth removed - users should use the mobile app
 import WebAbout from "./pages/WebAbout";
 import WebContact from "./pages/WebContact";
 import WebPricing from "./pages/WebPricing";
@@ -204,7 +204,7 @@ function AppRoutes() {
     <Routes>
       {/* Website routes - separate from app */}
       <Route path="/website" element={<Index />} />
-      <Route path="/weblogin" element={<WebAuth />} />
+      {/* WebAuth route removed - login/signup only through mobile app */}
       <Route path="/webabout" element={<WebAbout />} />
       <Route path="/webcontact" element={<WebContact />} />
       <Route path="/webpricing" element={<WebPricing />} />

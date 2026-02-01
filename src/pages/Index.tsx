@@ -76,14 +76,7 @@ const Index = () => {
               </button>
             </nav>
 
-            <div className="hidden lg:flex items-center gap-4">
-              <Button variant="ghost" onClick={() => navigate('/weblogin')}>
-                Sign In
-              </Button>
-              <Button onClick={() => navigate('/weblogin')} size="lg">
-                Get Started Free
-              </Button>
-            </div>
+            {/* Login buttons removed - users should download the mobile app */}
 
             {/* Mobile menu button */}
             <button 
@@ -110,14 +103,7 @@ const Index = () => {
                 <button onClick={() => navigate('/webcontact')} className="text-left text-muted-foreground hover:text-foreground">
                   Contact
                 </button>
-                <div className="flex gap-3 pt-4">
-                  <Button variant="outline" onClick={() => navigate('/weblogin')} className="flex-1">
-                    Sign In
-                  </Button>
-                  <Button onClick={() => navigate('/weblogin')} className="flex-1">
-                    Get Started
-                  </Button>
-                </div>
+                {/* Mobile login buttons removed - users should download the app */}
               </nav>
             </div>
           )}
@@ -142,10 +128,6 @@ const Index = () => {
                 Join over 50,000 Nigerians who trust SM Data App for fast, reliable, and secure payments.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-6">
-                <Button onClick={() => navigate('/weblogin')} size="lg" className="gap-2 text-lg px-8 py-6">
-                  Start Saving Now
-                  <ArrowRight className="w-5 h-5" />
-                </Button>
                 <Button variant="outline" size="lg" className="text-lg px-8 py-6" onClick={() => scrollToSection('services')}>
                   View Services
                 </Button>
@@ -411,12 +393,7 @@ const Index = () => {
               </p>
             </div>
           </div>
-          <div className="text-center mt-12">
-            <Button onClick={() => navigate('/weblogin')} size="lg" className="gap-2 text-lg px-8 py-6">
-              Create Free Account
-              <ArrowRight className="w-5 h-5" />
-            </Button>
-          </div>
+          {/* Create account button removed - users should download the app */}
         </div>
       </section>
 
@@ -452,12 +429,7 @@ const Index = () => {
               <p className="text-xs text-green-600 font-medium">Save up to 15%</p>
             </div>
           </div>
-          <div className="text-center mt-10">
-            <Button variant="outline" size="lg" onClick={() => navigate('/weblogin')} className="gap-2">
-              View All Prices
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
+          {/* View prices button removed */}
         </div>
       </section>
 
@@ -474,15 +446,6 @@ const Index = () => {
                 Join over 50,000 Nigerians who save money every day with SM Data App. Create your free account today!
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
-                <Button 
-                  onClick={() => navigate('/weblogin')} 
-                  size="lg" 
-                  variant="secondary"
-                  className="gap-2 text-lg px-8 py-6"
-                >
-                  Get Started Free
-                  <ChevronRight className="w-5 h-5" />
-                </Button>
                 <Button 
                   variant="outline" 
                   size="lg"
