@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,7 +8,9 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { NativeProvider } from "@/components/NativeProvider";
 import { SplashScreen } from "@/components/SplashScreen";
 import { LockScreen } from "@/components/auth/LockScreen";
+import { BlockedUserScreen } from "@/components/auth/BlockedUserScreen";
 import { PinSetupDialog, isPinSetup } from "@/components/auth/PinSetupDialog";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Capacitor } from "@capacitor/core";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -138,7 +140,6 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   // Show blocked screen if user is suspended
   if (isBlocked) {
-    const BlockedUserScreen = require('@/components/auth/BlockedUserScreen').BlockedUserScreen;
     return (
       <BlockedUserScreen
         reason={(profile as any)?.blocked_reason}
@@ -326,15 +327,17 @@ function AppWithSplash() {
 }
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <NativeProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <AppWithSplash />
-      </TooltipProvider>
-    </NativeProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <NativeProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <AppWithSplash />
+        </TooltipProvider>
+      </NativeProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

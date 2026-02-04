@@ -57,17 +57,18 @@ export function usePushNotifications() {
 
   // Initialize push notifications
   const initPush = useCallback(async () => {
+    // Guard against non-native platforms early
+    if (!Capacitor.isNativePlatform()) {
+      console.log('[PushNotifications] Not a native platform, skipping');
+      return;
+    }
+    
     console.log('[PushNotifications] initPush called', {
       isNative: Capacitor.isNativePlatform(),
       platform: Capacitor.getPlatform(),
       initRefCurrent: initRef.current,
       isInitializing
     });
-
-    if (!Capacitor.isNativePlatform()) {
-      console.log('[PushNotifications] Not a native platform, skipping');
-      return;
-    }
     
     if (initRef.current || isInitializing) {
       console.log('[PushNotifications] Already initialized or initializing, skipping');
