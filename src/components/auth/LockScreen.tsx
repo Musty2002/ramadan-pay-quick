@@ -29,14 +29,25 @@ export function LockScreen({ userEmail, userName, onUnlock, onSwitchAccount }: L
   const biometricTriggered = useRef(false);
   const hasPinSetup = isPinSetup();
 
-  // Auto-trigger biometric on mount
+  // Auto-trigger biometric on mount (use ref to track if already triggered)
   useEffect(() => {
-    if (biometricAvailable && biometricEnabled && !biometricTriggered.current) {
-      biometricTriggered.current = true;
-      setTimeout(() => {
-        handleBiometricAuth();
-      }, 500);
-    }
+    const triggerBiometric = async () => {
+      if (biometricAvailable && biometricEnabled && !biometricTriggered.current) {
+        biometricTriggered.current = true;
+        await new Promise(resolve => setTimeout(resolve, 500));
+        try {
+          const verified = await authenticate('Verify your identity to continue');
+          if (verified) {
+            onUnlock();
+          }
+        } catch (error) {
+          console.log('Biometric auth failed:', error);
+        }
+      }
+    };
+    
+    triggerBiometric();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [biometricAvailable, biometricEnabled]);
 
   const handleBiometricAuth = async () => {
@@ -124,9 +135,13 @@ export function LockScreen({ userEmail, userName, onUnlock, onSwitchAccount }: L
   const pinDigits = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
   // If no PIN is set up and no biometrics, just unlock (will prompt to set up PIN after)
+  // Use a ref to prevent multiple calls
+  const autoUnlockedRef = useRef(false);
+  
   useEffect(() => {
-    if (!hasPinSetup && !biometricAvailable) {
+    if (!hasPinSetup && !biometricAvailable && !autoUnlockedRef.current) {
       // No security set up yet, unlock and let the app prompt for setup
+      autoUnlockedRef.current = true;
       onUnlock();
     }
   }, [hasPinSetup, biometricAvailable, onUnlock]);

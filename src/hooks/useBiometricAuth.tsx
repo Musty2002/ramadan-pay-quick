@@ -47,6 +47,7 @@ export function useBiometricAuth() {
     }
 
     try {
+      // Wrap in try-catch to handle plugin unavailability
       const result: CheckBiometryResult = await BiometricAuth.checkBiometry();
       
       // Auto-enable biometric if available and not explicitly disabled
@@ -65,12 +66,14 @@ export function useBiometricAuth() {
         isEnabled: isEnabled && result.isAvailable,
         reason: result.reason || ''
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error checking biometry:', error);
+      // Gracefully handle when biometric plugin isn't available
       setBiometricState(prev => ({
         ...prev,
         isAvailable: false,
-        reason: 'Failed to check biometric availability'
+        isEnabled: false,
+        reason: error?.message || 'Biometric auth unavailable'
       }));
     } finally {
       setIsChecking(false);
@@ -113,7 +116,10 @@ export function useBiometricAuth() {
       await BiometricAuth.authenticate(options);
       return true;
     } catch (error: any) {
-      console.log('Biometric auth failed or cancelled:', error?.message);
+      // Don't log user cancellations as errors
+      if (error?.code !== 'userCancel' && error?.code !== 'userCanceled') {
+        console.log('Biometric auth failed:', error?.message);
+      }
       return false;
     }
   }, [biometricState.isAvailable, getBiometryName]);

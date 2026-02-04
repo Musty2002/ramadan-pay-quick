@@ -21,83 +21,117 @@ export function useNativeFeatures() {
   const [deviceInfo, setDeviceInfo] = useState<any>(null);
 
   useEffect(() => {
+    let mounted = true;
     const platform = Capacitor.getPlatform();
     setIsNative(platform !== 'web');
 
     const initNative = async () => {
-      if (platform !== 'web') {
-        // Hide splash screen after app loads
-        await SplashScreen.hide();
-
-        // Set status bar style
-        try {
-          await StatusBar.setStyle({ style: Style.Light });
-          await StatusBar.setBackgroundColor({ color: '#0ea5e9' });
-        } catch (e) {
-          console.log('StatusBar not available');
-        }
-
-        // Get device info
-        const info = await Device.getInfo();
-        setDeviceInfo(info);
-
-        // Setup keyboard listeners
-        Keyboard.addListener('keyboardWillShow', () => {
-          document.body.classList.add('keyboard-open');
-        });
-
-        Keyboard.addListener('keyboardWillHide', () => {
-          document.body.classList.remove('keyboard-open');
-        });
-
-        // Setup back button handler with improved navigation
-        App.addListener('backButton', ({ canGoBack }) => {
-          // Check if we're on a modal or can go back in history
-          const modals = document.querySelectorAll('[role="dialog"], [data-state="open"]');
-          if (modals.length > 0) {
-            // Close the modal by triggering escape key
-            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-          } else if (canGoBack) {
-            window.history.back();
-          } else {
-            // Show exit confirmation or just exit
-            App.exitApp();
+      try {
+        if (platform !== 'web') {
+          // Hide splash screen after app loads
+          try {
+            await SplashScreen.hide();
+          } catch (e) {
+            console.log('SplashScreen.hide failed:', e);
           }
-        });
 
-        // Setup app state listener
-        App.addListener('appStateChange', ({ isActive }) => {
-          console.log('App state changed. Is active:', isActive);
-        });
-      }
+          // Set status bar style
+          try {
+            await StatusBar.setStyle({ style: Style.Light });
+            await StatusBar.setBackgroundColor({ color: '#0ea5e9' });
+          } catch (e) {
+            console.log('StatusBar not available:', e);
+          }
 
-      // Network status (works on web too)
-      const status = await Network.getStatus();
-      setNetworkStatus({
-        connected: status.connected,
-        connectionType: status.connectionType
-      });
+          // Get device info
+          try {
+            const info = await Device.getInfo();
+            if (mounted) setDeviceInfo(info);
+          } catch (e) {
+            console.log('Device.getInfo failed:', e);
+          }
 
-      Network.addListener('networkStatusChange', (status) => {
-        setNetworkStatus({
-          connected: status.connected,
-          connectionType: status.connectionType
-        });
-        
-        if (!status.connected) {
-          toast.error('No internet connection');
+          // Setup keyboard listeners with error handling
+          try {
+            Keyboard.addListener('keyboardWillShow', () => {
+              document.body.classList.add('keyboard-open');
+            });
+
+            Keyboard.addListener('keyboardWillHide', () => {
+              document.body.classList.remove('keyboard-open');
+            });
+          } catch (e) {
+            console.log('Keyboard listeners setup failed:', e);
+          }
+
+          // Setup back button handler with improved navigation
+          try {
+            App.addListener('backButton', ({ canGoBack }) => {
+              // Check if we're on a modal or can go back in history
+              const modals = document.querySelectorAll('[role="dialog"], [data-state="open"]');
+              if (modals.length > 0) {
+                // Close the modal by triggering escape key
+                document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+              } else if (canGoBack) {
+                window.history.back();
+              } else {
+                // Show exit confirmation or just exit
+                App.exitApp();
+              }
+            });
+
+            // Setup app state listener
+            App.addListener('appStateChange', ({ isActive }) => {
+              console.log('App state changed. Is active:', isActive);
+            });
+          } catch (e) {
+            console.log('App listeners setup failed:', e);
+          }
         }
-      });
+
+        // Network status (works on web too)
+        try {
+          const status = await Network.getStatus();
+          if (mounted) {
+            setNetworkStatus({
+              connected: status.connected,
+              connectionType: status.connectionType
+            });
+          }
+
+          Network.addListener('networkStatusChange', (status) => {
+            if (mounted) {
+              setNetworkStatus({
+                connected: status.connected,
+                connectionType: status.connectionType
+              });
+            }
+            
+            if (!status.connected) {
+              toast.error('No internet connection');
+            }
+          });
+        } catch (e) {
+          console.log('Network status failed:', e);
+        }
+      } catch (error) {
+        console.error('Failed to initialize native features:', error);
+      }
     };
 
     initNative();
 
     return () => {
-      if (platform !== 'web') {
-        Keyboard.removeAllListeners();
-        App.removeAllListeners();
+      mounted = false;
+      try {
+        if (platform !== 'web') {
+          Keyboard.removeAllListeners();
+          App.removeAllListeners();
+        }
+        Network.removeAllListeners();
+      } catch (e) {
+        console.log('Cleanup listeners failed:', e);
       }
-      Network.removeAllListeners();
     };
   }, []);
 
