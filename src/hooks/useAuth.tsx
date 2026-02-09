@@ -37,50 +37,75 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isBlocked, setIsBlocked] = useState(false);
 
   const fetchProfile = async (userId: string, retryCount = 0): Promise<void> => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*, is_blocked, blocked_at, blocked_reason')
-      .eq('user_id', userId)
-      .maybeSingle();
-    
-    if (data) {
-      setProfile(data as ExtendedProfile);
-      setIsBlocked(data.is_blocked === true);
-    } else if (retryCount < 3) {
-      // Retry after a short delay - the database trigger might not have completed yet
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return fetchProfile(userId, retryCount + 1);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*, is_blocked, blocked_at, blocked_reason')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('fetchProfile error:', error);
+        return;
+      }
+      
+      if (data) {
+        setProfile(data as ExtendedProfile);
+        setIsBlocked(data.is_blocked === true);
+      } else if (retryCount < 3) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return fetchProfile(userId, retryCount + 1);
+      }
+    } catch (err) {
+      console.error('fetchProfile unexpected error:', err);
     }
   };
 
   const fetchWallet = async (userId: string, retryCount = 0): Promise<void> => {
-    const { data } = await supabase
-      .from('wallets')
-      .select('*')
-      .eq('user_id', userId)
-      .maybeSingle();
-    
-    if (data) {
-      setWallet(data as Wallet);
-    } else if (retryCount < 3) {
-      // Retry after a short delay - the database trigger might not have completed yet
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return fetchWallet(userId, retryCount + 1);
+    try {
+      const { data, error } = await supabase
+        .from('wallets')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('fetchWallet error:', error);
+        return;
+      }
+      
+      if (data) {
+        setWallet(data as Wallet);
+      } else if (retryCount < 3) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return fetchWallet(userId, retryCount + 1);
+      }
+    } catch (err) {
+      console.error('fetchWallet unexpected error:', err);
     }
   };
 
   const fetchCashbackWallet = async (userId: string, retryCount = 0): Promise<void> => {
-    const { data } = await supabase
-      .from('cashback_wallets')
-      .select('*')
-      .eq('user_id', userId)
-      .maybeSingle();
-    
-    if (data) {
-      setCashbackWallet(data as CashbackWallet);
-    } else if (retryCount < 3) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return fetchCashbackWallet(userId, retryCount + 1);
+    try {
+      const { data, error } = await supabase
+        .from('cashback_wallets')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('fetchCashbackWallet error:', error);
+        return;
+      }
+      
+      if (data) {
+        setCashbackWallet(data as CashbackWallet);
+      } else if (retryCount < 3) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return fetchCashbackWallet(userId, retryCount + 1);
+      }
+    } catch (err) {
+      console.error('fetchCashbackWallet unexpected error:', err);
     }
   };
 
@@ -88,20 +113,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        // Defer Supabase calls with setTimeout
-        if (session?.user) {
-          setTimeout(() => {
-            fetchProfile(session.user.id);
-            fetchWallet(session.user.id);
-            fetchCashbackWallet(session.user.id);
-          }, 0);
-        } else {
-          setProfile(null);
-          setWallet(null);
-          setCashbackWallet(null);
+        try {
+          setSession(session);
+          setUser(session?.user ?? null);
+          
+          // Defer Supabase calls with setTimeout
+          if (session?.user) {
+            setTimeout(() => {
+              fetchProfile(session.user.id);
+              fetchWallet(session.user.id);
+              fetchCashbackWallet(session.user.id);
+            }, 0);
+          } else {
+            setProfile(null);
+            setWallet(null);
+            setCashbackWallet(null);
+          }
+        } catch (err) {
+          console.error('Auth state change error:', err);
         }
         setLoading(false);
       }
@@ -109,13 +138,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-        fetchWallet(session.user.id);
-        fetchCashbackWallet(session.user.id);
+      try {
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          fetchProfile(session.user.id);
+          fetchWallet(session.user.id);
+          fetchCashbackWallet(session.user.id);
+        }
+      } catch (err) {
+        console.error('Get session error:', err);
       }
+      setLoading(false);
+    }).catch((err) => {
+      console.error('getSession failed:', err);
       setLoading(false);
     });
 
@@ -195,7 +231,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error('Sign out error:', err);
+    }
     setUser(null);
     setSession(null);
     setProfile(null);

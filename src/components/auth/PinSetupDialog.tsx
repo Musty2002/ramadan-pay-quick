@@ -17,12 +17,30 @@ const PIN_HASH_KEY = 'user_pin_hash';
 const TRANSACTION_PIN_HASH_KEY = 'transaction_pin_hash';
 
 // Simple hash function for PIN (for local storage only, not for sensitive data)
+// Falls back to a basic hash if crypto.subtle is unavailable (older Android WebViews)
 async function hashPin(pin: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(pin + 'sm_data_salt_2024');
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  const saltedPin = pin + 'sm_data_salt_2024';
+  
+  try {
+    if (typeof crypto !== 'undefined' && crypto.subtle) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(saltedPin);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+  } catch (e) {
+    console.warn('crypto.subtle unavailable, using fallback hash');
+  }
+  
+  // Fallback: simple string hash for older devices without crypto.subtle
+  let hash = 0;
+  for (let i = 0; i < saltedPin.length; i++) {
+    const char = saltedPin.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return 'fallback_' + Math.abs(hash).toString(16).padStart(8, '0');
 }
 
 export async function verifyStoredPin(pin: string): Promise<boolean> {
