@@ -14,5 +14,7 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    // Prevent duplicate React instances that cause "dispatcher is null" crashes on Android
+    dedupe: ["react", "react-dom", "react/jsx-runtime"],
   },
 }));

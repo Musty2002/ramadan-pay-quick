@@ -171,6 +171,15 @@ export default function Data() {
     setShowVerifyDialog(false);
     setPurchasing(true);
     try {
+      if (!selectedBundle || !selectedNetwork) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Please select a data plan first.',
+        });
+        setPurchasing(false);
+        return;
+      }
       // Route to appropriate provider based on bundle provider
       const provider = selectedBundle.provider || 'rgc';
       let functionName: string;

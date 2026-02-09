@@ -16,7 +16,8 @@ export function SplashScreen({ onFinish, minDuration = 2000 }: SplashScreenProps
     }, minDuration);
 
     return () => clearTimeout(timer);
-  }, [onFinish, minDuration]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [minDuration]);
 
   return (
     <div 

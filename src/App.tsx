@@ -102,14 +102,18 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   // Check if user needs to set up PIN (after unlock, on native platforms)
   useEffect(() => {
-    if (!isLocked && user && Capacitor.isNativePlatform() && !pinSetupDismissed) {
-      const hasPinSetup = isPinSetup();
-      if (!hasPinSetup) {
-        // Delay to let the dashboard render first
-        const timer = setTimeout(() => {
-          setShowPinSetup(true);
-        }, 1500);
-        return () => clearTimeout(timer);
+    if (!isLocked && user && !pinSetupDismissed) {
+      try {
+        if (!Capacitor.isNativePlatform()) return;
+        const hasPinSetupAlready = isPinSetup();
+        if (!hasPinSetupAlready) {
+          const timer = setTimeout(() => {
+            setShowPinSetup(true);
+          }, 1500);
+          return () => clearTimeout(timer);
+        }
+      } catch (err) {
+        console.error('PIN setup check error:', err);
       }
     }
   }, [isLocked, user, pinSetupDismissed]);
@@ -119,11 +123,15 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     setIsLocked(false);
   }, []);
 
-  const handleSwitchAccount = useCallback(() => {
-    sessionStorage.removeItem(SESSION_UNLOCKED_KEY);
-    localStorage.removeItem('last_logged_in_user');
-    localStorage.removeItem('biometric_auth_user');
-    supabase.auth.signOut();
+  const handleSwitchAccount = useCallback(async () => {
+    try {
+      sessionStorage.removeItem(SESSION_UNLOCKED_KEY);
+      localStorage.removeItem('last_logged_in_user');
+      localStorage.removeItem('biometric_auth_user');
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error('Switch account error:', err);
+    }
   }, []);
 
   if (loading || checkingLock) {

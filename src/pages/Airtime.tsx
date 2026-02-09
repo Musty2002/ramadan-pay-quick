@@ -176,6 +176,16 @@ export default function Airtime() {
     setPurchasing(true);
     setShowTopUpPrompt(false);
     
+    if (!selectedNetwork) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Please select a network first.',
+      });
+      setPurchasing(false);
+      return;
+    }
+    
     const purchaseAmount = parseFloat(amount);
     
     try {
