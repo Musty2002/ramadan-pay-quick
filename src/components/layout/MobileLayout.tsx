@@ -8,7 +8,7 @@ interface MobileLayoutProps {
 
 export function MobileLayout({ children, showNav = true }: MobileLayoutProps) {
   return (
-    <div className="min-h-screen max-w-md mx-auto bg-background flex flex-col">
+    <div className="min-h-screen max-w-md md:max-w-2xl lg:max-w-4xl mx-auto bg-background flex flex-col">
       <main className={`flex-1 ${showNav ? 'pb-20' : ''}`}>
         {children}
       </main>
