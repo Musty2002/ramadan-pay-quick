@@ -130,7 +130,7 @@ export default function Dashboard() {
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-4">
+        <div className="flex items-center justify-between px-4 md:px-6 py-4">
           <img src={logo} alt="SM Data" className="h-10 w-10 rounded-full object-cover border-2 border-secondary" />
           <h1 className="text-lg font-bold text-secondary">SM Data App</h1>
           <button 

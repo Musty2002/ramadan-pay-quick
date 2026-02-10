@@ -93,7 +93,7 @@ export function RecentTransactions() {
   }
 
   return (
-    <div className="px-4 pb-6">
+    <div className="px-4 md:px-6 pb-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold text-foreground">Recent Transactions</h3>
         <button
@@ -113,7 +113,7 @@ export function RecentTransactions() {
           {transactions.map((tx) => (
             <div
               key={tx.id}
-              className="bg-card rounded-xl p-4 flex items-center gap-3 shadow-sm"
+              className="bg-card rounded-xl p-4 md:p-5 flex items-center gap-3 md:gap-4 shadow-sm"
             >
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center ${

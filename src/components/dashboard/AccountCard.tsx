@@ -182,9 +182,9 @@ export function AccountCard() {
   };
 
   return (
-    <div className="space-y-3 mx-4">
+    <div className="space-y-3 mx-4 md:mx-6">
       {/* Main Wallet Card */}
-      <div className="gradient-primary rounded-2xl p-5 text-primary-foreground shadow-lg">
+      <div className="gradient-primary rounded-2xl p-5 md:p-6 text-primary-foreground shadow-lg">
         {/* Account Info */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -228,7 +228,7 @@ export function AccountCard() {
         {/* Balance */}
         <div className="mb-1">
           <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold">
+            <span className="text-2xl md:text-3xl font-bold">
               {showBalance ? formatBalance(wallet?.balance || 0) : '₦ ****'}
             </span>
             <button

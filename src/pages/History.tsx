@@ -127,7 +127,7 @@ export default function History() {
 
   return (
     <MobileLayout>
-      <div className="safe-area-top px-4 py-6">
+      <div className="safe-area-top px-4 md:px-6 py-6">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-xl font-bold text-foreground">Transaction History</h1>
           <Button variant="outline" size="icon" className="h-9 w-9">
