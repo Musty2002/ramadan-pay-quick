@@ -27,17 +27,17 @@ export function ServicesGrid() {
   return (
     <div className="px-4 py-6">
       <h3 className="text-sm font-semibold text-foreground mb-4">Services</h3>
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 md:grid-cols-4 gap-4 md:gap-6">
         {services.map(({ icon: Icon, label, path, color }) => (
           <button
             key={path}
             onClick={() => navigate(path)}
             className="flex flex-col items-center gap-2 group"
           >
-            <div className={`w-12 h-12 rounded-xl ${color} flex items-center justify-center transition-transform group-hover:scale-105`}>
-              <Icon className="w-5 h-5" />
+            <div className={`w-12 h-12 md:w-14 md:h-14 rounded-xl ${color} flex items-center justify-center transition-transform group-hover:scale-105`}>
+              <Icon className="w-5 h-5 md:w-6 md:h-6" />
             </div>
-            <span className="text-xs text-foreground font-medium text-center">{label}</span>
+            <span className="text-xs md:text-sm text-foreground font-medium text-center">{label}</span>
           </button>
         ))}
       </div>
