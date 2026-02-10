@@ -79,7 +79,7 @@ export default function Services() {
       <div className="safe-area-top px-4 py-6">
         <h1 className="text-xl font-bold text-foreground mb-6">All Services</h1>
 
-        <div className="space-y-3">
+        <div className="space-y-3 md:grid md:grid-cols-2 md:gap-4 md:space-y-0">
           {services.map(({ icon: Icon, label, description, path, color }) => (
             <button
               key={path}

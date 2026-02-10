@@ -65,7 +65,7 @@ export default function Profile() {
         </div>
 
         {/* Menu Items */}
-        <div className="space-y-2 mb-8">
+        <div className="space-y-2 mb-8 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
           {menuItems.map(({ icon: Icon, label, path }) => (
             <button
               key={path}
