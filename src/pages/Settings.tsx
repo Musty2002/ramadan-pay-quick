@@ -87,26 +87,6 @@ export default function Settings() {
                 <Switch checked={darkMode} onCheckedChange={handleThemeChange} />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Globe className="w-5 h-5 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium text-foreground">Language</p>
-                    <p className="text-xs text-muted-foreground">Select your language</p>
-                  </div>
-                </div>
-                <Select defaultValue="en">
-                  <SelectTrigger className="w-28">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="yo">Yoruba</SelectItem>
-                    <SelectItem value="ig">Igbo</SelectItem>
-                    <SelectItem value="ha">Hausa</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </CardContent>
           </Card>
 
