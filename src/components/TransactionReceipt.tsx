@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import logo from '@/assets/sm-data-logo.jpeg';
+import logo from '@/assets/sm-data-sub-logo.jpeg';
 
 // Import network logos
 import mtnLogo from '@/assets/networks/mtn-logo.png';
@@ -66,7 +66,7 @@ export function TransactionReceipt({ open, onClose, transaction }: TransactionRe
       });
       
       const link = document.createElement('a');
-      link.download = `SM-Data-Receipt-${transactionId}.png`;
+      link.download = `SM-Data-Sub-Receipt-${transactionId}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
       
@@ -90,7 +90,7 @@ export function TransactionReceipt({ open, onClose, transaction }: TransactionRe
       });
       
       const base64Data = canvas.toDataURL('image/png').split(',')[1];
-      const fileName = `SM-Data-Receipt-${transactionId}.png`;
+      const fileName = `SM-Data-Sub-Receipt-${transactionId}.png`;
       
       // Native Android/iOS sharing with file
       if (Capacitor.getPlatform() !== 'web') {
@@ -104,7 +104,7 @@ export function TransactionReceipt({ open, onClose, transaction }: TransactionRe
           
           // Share the file using native share
           await Share.share({
-            title: 'SM Data App - Transaction Receipt',
+            title: 'SM Data Sub - Transaction Receipt',
             text: `Transaction Receipt - ${transaction.type === 'data' ? transaction.dataPlan : 'Airtime'} for ${transaction.phoneNumber}`,
             url: result.uri,
             dialogTitle: 'Share Receipt',
@@ -127,7 +127,7 @@ export function TransactionReceipt({ open, onClose, transaction }: TransactionRe
       // Check if Web Share API supports files
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
-          title: 'SM Data App - Transaction Receipt',
+          title: 'SM Data Sub - Transaction Receipt',
           text: `Transaction Receipt - ${transaction.type === 'data' ? transaction.dataPlan : 'Airtime'} for ${transaction.phoneNumber}`,
           files: [file],
         });
@@ -156,7 +156,7 @@ ${transaction.type === 'data' && transaction.dataPlan ? `📦 Data Plan: ${trans
         `.trim();
         
         await navigator.share({
-          title: 'SM Data App - Transaction Receipt',
+          title: 'SM Data Sub - Transaction Receipt',
           text: receiptText,
         });
         toast.success('Receipt shared successfully!');

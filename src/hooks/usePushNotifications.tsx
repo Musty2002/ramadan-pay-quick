@@ -102,7 +102,7 @@ export function usePushNotifications() {
           await LocalNotifications.createChannel({
             id: 'push_notifications',
             name: 'Push Notifications',
-            description: 'Push notifications from SM Data App',
+            description: 'Push notifications from SM Data Sub',
             importance: 5,
             visibility: 1,
             sound: 'default',

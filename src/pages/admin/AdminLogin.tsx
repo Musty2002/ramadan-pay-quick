@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lock, Mail, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import logo from '@/assets/sm-data-logo.jpeg';
+import logo from '@/assets/sm-data-sub-logo.jpeg';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
