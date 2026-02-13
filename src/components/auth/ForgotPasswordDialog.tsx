@@ -38,15 +38,19 @@ export function ForgotPasswordDialog() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+      const { data, error } = await supabase.functions.invoke('send-password-reset', {
+        body: { 
+          email, 
+          redirectTo: `${window.location.origin}/reset-password` 
+        },
       });
 
       if (error) {
+        const errorMsg = typeof data?.error === 'string' ? data.error : error.message;
         toast({
           variant: 'destructive',
           title: 'Error',
-          description: error.message,
+          description: errorMsg || 'Something went wrong. Please try again.',
         });
       } else {
         setSent(true);
