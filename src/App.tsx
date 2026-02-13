@@ -16,7 +16,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 // Pages
-import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Services from "./pages/Services";
@@ -31,11 +30,6 @@ import Transfer from "./pages/Transfer";
 import AddMoney from "./pages/AddMoney";
 import BvnNin from "./pages/BvnNin";
 import Notifications from "./pages/Notifications";
-// WebAuth removed - users should use the mobile app
-import WebAbout from "./pages/WebAbout";
-import WebContact from "./pages/WebContact";
-import WebPricing from "./pages/WebPricing";
-import WebPrivacyPolicy from "./pages/WebPrivacyPolicy";
 import Cashback from "./pages/Cashback";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
@@ -45,7 +39,7 @@ import EditProfile from "./pages/EditProfile";
 import Security from "./pages/Security";
 import Support from "./pages/Support";
 import Settings from "./pages/Settings";
-import DownloadApp from "./pages/DownloadApp";
+
 
 // Admin Pages
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -63,17 +57,6 @@ import SettingsPage from "./pages/admin/SettingsPage";
 import PromoBannersPage from "./pages/admin/PromoBannersPage";
 import { AdminProvider, useAdmin } from "@/hooks/useAdmin";
 
-// Check if accessing from web on production domain (not admin subdomain)
-const isWebAppBlocked = () => {
-  if (Capacitor.isNativePlatform()) return false;
-  
-  const hostname = window.location.hostname;
-  const isProductionDomain = hostname === 'smdataapp.com.ng' || hostname === 'www.smdataapp.com.ng';
-  const isAdminDomain = hostname === 'admin.smdataapp.com.ng';
-  
-  // Block if on production domain but not admin subdomain
-  return isProductionDomain && !isAdminDomain;
-};
 
 const queryClient = new QueryClient();
 
@@ -222,51 +205,32 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppRoutes() {
-  const webBlocked = isWebAppBlocked();
-  
   return (
     <Routes>
-      {/* Website routes - always accessible */}
-      <Route path="/website" element={<Index />} />
-      <Route path="/webabout" element={<WebAbout />} />
-      <Route path="/webcontact" element={<WebContact />} />
-      <Route path="/webpricing" element={<WebPricing />} />
-      <Route path="/website/privacy-policy" element={<WebPrivacyPolicy />} />
-      
-      {/* If web is blocked on production domain, show download app for app routes */}
-      {webBlocked ? (
-        <>
-          <Route path="/" element={<Navigate to="/website" replace />} />
-          <Route path="*" element={<DownloadApp />} />
-        </>
-      ) : (
-        <>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
-          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/services" element={<ProtectedRoute><Services /></ProtectedRoute>} />
-          <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/referral" element={<ProtectedRoute><Referral /></ProtectedRoute>} />
-          <Route path="/data" element={<ProtectedRoute><Data /></ProtectedRoute>} />
-          <Route path="/airtime" element={<ProtectedRoute><Airtime /></ProtectedRoute>} />
-          <Route path="/electricity" element={<ProtectedRoute><Electricity /></ProtectedRoute>} />
-          <Route path="/tv" element={<ProtectedRoute><TV /></ProtectedRoute>} />
-          <Route path="/transfer" element={<ProtectedRoute><Transfer /></ProtectedRoute>} />
-          <Route path="/add-money" element={<ProtectedRoute><AddMoney /></ProtectedRoute>} />
-          <Route path="/bvn-nin" element={<ProtectedRoute><BvnNin /></ProtectedRoute>} />
-          <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-          <Route path="/cashback" element={<ProtectedRoute><Cashback /></ProtectedRoute>} />
-          <Route path="/exam-pin" element={<ProtectedRoute><ExamPin /></ProtectedRoute>} />
-          <Route path="/reseller-promo" element={<ProtectedRoute><ResellerPromo /></ProtectedRoute>} />
-          <Route path="/profile/edit" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
-          <Route path="/security" element={<ProtectedRoute><Security /></ProtectedRoute>} />
-          <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
-          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="*" element={<NotFound />} />
-        </>
-      )}
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
+      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/services" element={<ProtectedRoute><Services /></ProtectedRoute>} />
+      <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      <Route path="/referral" element={<ProtectedRoute><Referral /></ProtectedRoute>} />
+      <Route path="/data" element={<ProtectedRoute><Data /></ProtectedRoute>} />
+      <Route path="/airtime" element={<ProtectedRoute><Airtime /></ProtectedRoute>} />
+      <Route path="/electricity" element={<ProtectedRoute><Electricity /></ProtectedRoute>} />
+      <Route path="/tv" element={<ProtectedRoute><TV /></ProtectedRoute>} />
+      <Route path="/transfer" element={<ProtectedRoute><Transfer /></ProtectedRoute>} />
+      <Route path="/add-money" element={<ProtectedRoute><AddMoney /></ProtectedRoute>} />
+      <Route path="/bvn-nin" element={<ProtectedRoute><BvnNin /></ProtectedRoute>} />
+      <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+      <Route path="/cashback" element={<ProtectedRoute><Cashback /></ProtectedRoute>} />
+      <Route path="/exam-pin" element={<ProtectedRoute><ExamPin /></ProtectedRoute>} />
+      <Route path="/reseller-promo" element={<ProtectedRoute><ResellerPromo /></ProtectedRoute>} />
+      <Route path="/profile/edit" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
+      <Route path="/security" element={<ProtectedRoute><Security /></ProtectedRoute>} />
+      <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
+      <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
@@ -302,11 +266,9 @@ function AdminRoutes() {
 
 function AppWithSplash() {
   const [showSplash, setShowSplash] = useState(() => {
-    // Only show splash on main app routes (not admin or website routes)
     const path = window.location.pathname;
-    const isWebsiteRoute = path.startsWith('/web') || path === '/website';
     const isAdminRoute = path.startsWith('/admin');
-    return !isWebsiteRoute && !isAdminRoute;
+    return !isAdminRoute;
   });
 
   if (showSplash) {
