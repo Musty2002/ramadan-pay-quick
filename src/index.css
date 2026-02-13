@@ -2,35 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
-/* SM Data App - Mobile Fintech App Design System */
+/* SM Data Sub - Mobile Fintech App Design System */
 
 @layer base {
   :root {
     /* Light background */
     --background: 0 0% 98%;
-    --foreground: 150 40% 12%;
+    --foreground: 220 40% 12%;
 
     /* Card styling - white cards */
     --card: 0 0% 100%;
-    --card-foreground: 150 40% 12%;
+    --card-foreground: 220 40% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 150 40% 12%;
+    --popover-foreground: 220 40% 12%;
 
     /* Primary - Red from logo */
-    --primary: 0 75% 50%;
+    --primary: 4 80% 52%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary - Green from logo border */
-    --secondary: 130 55% 30%;
+    /* Secondary - Blue from logo band */
+    --secondary: 215 72% 48%;
     --secondary-foreground: 0 0% 100%;
 
     /* Muted - Soft gray */
     --muted: 0 0% 94%;
-    --muted-foreground: 150 10% 45%;
+    --muted-foreground: 220 10% 45%;
 
-    /* Accent - Green accent */
-    --accent: 130 55% 30%;
+    /* Accent - Blue accent */
+    --accent: 215 72% 48%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
@@ -38,7 +38,7 @@
 
     --border: 0 0% 88%;
     --input: 0 0% 88%;
-    --ring: 0 75% 50%;
+    --ring: 4 80% 52%;
 
     --radius: 1rem;
 
@@ -51,58 +51,58 @@
     --warning-foreground: 0 0% 100%;
 
     /* Custom gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(0 75% 50%) 0%, hsl(0 70% 58%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(4 80% 52%) 0%, hsl(4 75% 58%) 100%);
     --gradient-bg: linear-gradient(180deg, hsl(0 0% 98%) 0%, hsl(0 0% 96%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(130 55% 30%) 0%, hsl(130 50% 40%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(215 72% 48%) 0%, hsl(215 65% 55%) 100%);
 
     /* Sidebar colors */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 150 40% 12%;
-    --sidebar-primary: 0 75% 50%;
+    --sidebar-foreground: 220 40% 12%;
+    --sidebar-primary: 4 80% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 130 55% 92%;
-    --sidebar-accent-foreground: 130 55% 30%;
+    --sidebar-accent: 215 72% 92%;
+    --sidebar-accent-foreground: 215 72% 48%;
     --sidebar-border: 0 0% 88%;
-    --sidebar-ring: 0 75% 50%;
+    --sidebar-ring: 4 80% 52%;
   }
 
   .dark {
-    --background: 150 20% 8%;
+    --background: 220 20% 8%;
     --foreground: 0 0% 95%;
 
-    --card: 150 20% 12%;
+    --card: 220 20% 12%;
     --card-foreground: 0 0% 95%;
 
-    --popover: 150 20% 12%;
+    --popover: 220 20% 12%;
     --popover-foreground: 0 0% 95%;
 
-    --primary: 0 75% 55%;
+    --primary: 4 80% 55%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 130 50% 35%;
+    --secondary: 215 65% 40%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 150 15% 18%;
+    --muted: 220 15% 18%;
     --muted-foreground: 0 0% 60%;
 
-    --accent: 130 50% 35%;
+    --accent: 215 65% 40%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 95%;
 
-    --border: 150 15% 20%;
-    --input: 150 15% 20%;
-    --ring: 0 75% 55%;
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 4 80% 55%;
 
-    --sidebar-background: 150 20% 10%;
+    --sidebar-background: 220 20% 10%;
     --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 0 75% 55%;
+    --sidebar-primary: 4 80% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 150 15% 18%;
+    --sidebar-accent: 220 15% 18%;
     --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 150 15% 20%;
-    --sidebar-ring: 0 75% 55%;
+    --sidebar-border: 220 15% 20%;
+    --sidebar-ring: 4 80% 55%;
   }
 }
 
@@ -137,7 +137,7 @@
   }
 
   .gradient-secondary {
-    background: linear-gradient(135deg, hsl(130 55% 30%) 0%, hsl(130 50% 40%) 100%);
+    background: linear-gradient(135deg, hsl(215 72% 48%) 0%, hsl(215 65% 55%) 100%);
   }
 
   .safe-area-top {

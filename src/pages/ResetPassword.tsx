@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import logo from '@/assets/sm-data-logo.jpeg';
+import logo from '@/assets/sm-data-sub-logo.jpeg';
 
 const passwordSchema = z
   .object({
@@ -156,10 +156,10 @@ export default function ResetPassword() {
       <div className="mb-8 text-center">
         <img
           src={logo}
-          alt="SM Data App"
+          alt="SM Data Sub"
           className="w-24 h-24 mx-auto rounded-full shadow-lg mb-4 border-4 border-secondary"
         />
-        <h1 className="text-2xl font-bold text-secondary">SM Data App</h1>
+        <h1 className="text-2xl font-bold text-secondary">SM Data Sub</h1>
       </div>
 
       {/* Form Card */}

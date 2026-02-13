@@ -9,7 +9,7 @@ import { Bell, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import logo from '@/assets/sm-data-logo.jpeg';
+import logo from '@/assets/sm-data-sub-logo.jpeg';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -131,8 +131,8 @@ export default function Dashboard() {
 
         {/* Header */}
         <div className="flex items-center justify-between px-4 md:px-6 py-4">
-          <img src={logo} alt="SM Data" className="h-10 w-10 rounded-full object-cover border-2 border-secondary" />
-          <h1 className="text-lg font-bold text-secondary">SM Data App</h1>
+          <img src={logo} alt="SM Data Sub" className="h-10 w-10 rounded-full object-cover border-2 border-secondary" />
+          <h1 className="text-lg font-bold text-secondary">SM Data Sub</h1>
           <button 
             onClick={() => navigate('/notifications')}
             className="relative w-10 h-10 flex items-center justify-center rounded-full bg-muted hover:bg-muted/80 transition-colors"

@@ -60,7 +60,7 @@ export default function Referral() {
   const shareReferralCode = async () => {
     if (!profile?.referral_code) return;
 
-    const shareText = `Join SM Data App using my referral code: ${profile.referral_code} and get ₦100 bonus when you buy at least 1GB of data! Download now and start saving on data, airtime, and bills.`;
+    const shareText = `Join SM Data Sub using my referral code: ${profile.referral_code} and get ₦100 bonus when you buy at least 1GB of data! Download now and start saving on data, airtime, and bills.`;
 
     if (navigator.share) {
       try {
@@ -99,7 +99,7 @@ export default function Referral() {
           <Gift className="w-12 h-12 mx-auto mb-3" />
           <h2 className="text-xl font-bold mb-2">Earn ₦200 Per Referral</h2>
           <p className="text-sm opacity-90">
-            Invite friends to join SM Data App. When they buy at least 1GB of data, you earn ₦200 and they get ₦100!
+            Invite friends to join SM Data Sub. When they buy at least 1GB of data, you earn ₦200 and they get ₦100!
           </p>
         </div>
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import logo from '@/assets/sm-data-logo.jpeg';
+import logo from '@/assets/sm-data-sub-logo.jpeg';
 
 interface SplashScreenProps {
   onFinish: () => void;
@@ -30,14 +30,14 @@ export function SplashScreen({ onFinish, minDuration = 2000 }: SplashScreenProps
         <div className="absolute inset-0 bg-white/20 rounded-full blur-xl scale-150 animate-pulse" />
         <img 
           src={logo} 
-          alt="SM Data App" 
+          alt="SM Data Sub" 
           className="w-32 h-32 rounded-full shadow-2xl border-4 border-white/30 relative z-10"
         />
       </div>
 
       {/* App Name */}
       <h1 className="text-3xl font-bold text-white mt-8 animate-slide-up">
-        SM Data App
+        SM Data Sub
       </h1>
       
       {/* Tagline */}

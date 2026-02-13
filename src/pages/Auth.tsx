@@ -11,7 +11,7 @@ import { ForgotPasswordDialog } from '@/components/auth/ForgotPasswordDialog';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { useLoginTracking } from '@/hooks/useLoginTracking';
 import { Capacitor } from '@capacitor/core';
-import logo from '@/assets/sm-data-logo.jpeg';
+import logo from '@/assets/sm-data-sub-logo.jpeg';
 
 const signUpSchema = z.object({
   fullName: z.string().min(2, 'Full name must be at least 2 characters'),
@@ -227,8 +227,8 @@ export default function Auth() {
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 bg-background">
       {/* Logo */}
       <div className="mb-8 text-center">
-        <img src={logo} alt="SM Data App" className="w-24 h-24 mx-auto rounded-full shadow-lg mb-4 border-4 border-secondary" />
-        <h1 className="text-2xl font-bold text-secondary">SM Data App</h1>
+        <img src={logo} alt="SM Data Sub" className="w-24 h-24 mx-auto rounded-full shadow-lg mb-4 border-4 border-secondary" />
+        <h1 className="text-2xl font-bold text-secondary">SM Data Sub</h1>
         <p className="text-muted-foreground text-sm mt-1">Your trusted data partner</p>
       </div>
 

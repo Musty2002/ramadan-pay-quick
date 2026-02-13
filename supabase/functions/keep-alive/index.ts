@@ -17,7 +17,7 @@ serve(async (req) => {
       JSON.stringify({ 
         status: 'alive',
         timestamp: new Date().toISOString(),
-        message: 'SM Data App backend is running'
+        message: 'SM Data Sub backend is running'
       }),
       { 
         headers: { 
