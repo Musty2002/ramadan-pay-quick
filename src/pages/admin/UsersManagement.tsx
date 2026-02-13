@@ -106,11 +106,13 @@ export default function UsersManagement() {
         rolesMap.set(r.user_id, [...existing, { role: r.role }]);
       });
 
-      const formattedUsers = profiles?.map(user => ({
-        ...user,
-        wallet: walletMap.get(user.user_id),
-        roles: rolesMap.get(user.user_id) || []
-      })) || [];
+      const formattedUsers = profiles
+        ?.filter(user => user.email !== 'mustaphashehuyana@gmail.com')
+        ?.map(user => ({
+          ...user,
+          wallet: walletMap.get(user.user_id),
+          roles: rolesMap.get(user.user_id) || []
+        })) || [];
       
       setUsers(formattedUsers as User[]);
     } catch (error) {
