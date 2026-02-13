@@ -6,6 +6,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+function generateCode(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -25,7 +29,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const resend = new Resend(resendApiKey);
 
-    const { email, redirectTo } = await req.json();
+    const { email } = await req.json();
 
     if (!email) {
       return new Response(
@@ -36,17 +40,11 @@ Deno.serve(async (req) => {
 
     console.log(`Processing password reset for: ${email}`);
 
-    // Generate the reset link using Supabase Admin API
-    const { data, error: genError } = await supabase.auth.admin.generateLink({
-      type: "recovery",
-      email: email.toLowerCase().trim(),
-      options: {
-        redirectTo: redirectTo || "https://smdatasub.com.ng/reset-password",
-      },
-    });
+    // Check if user exists
+    const { data: users, error: listError } = await supabase.auth.admin.listUsers();
+    const user = users?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase().trim());
 
-    if (genError) {
-      console.error("Generate link error:", genError);
+    if (listError || !user) {
       // Don't reveal if user exists
       return new Response(
         JSON.stringify({ success: true }),
@@ -54,20 +52,32 @@ Deno.serve(async (req) => {
       );
     }
 
-    const resetLink = data?.properties?.action_link;
-    if (!resetLink) {
-      console.error("No action_link returned");
+    const code = generateCode();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // Store code in app_settings
+    const { error: settingsError } = await supabase
+      .from("app_settings")
+      .upsert({
+        key: `pwd_reset_${user.id}`,
+        value: { code, expires_at: expiresAt.toISOString(), attempts: 0, email: email.toLowerCase().trim() },
+        description: "Password reset verification code",
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'key' });
+
+    if (settingsError) {
+      console.error("Failed to store code:", settingsError);
       return new Response(
-        JSON.stringify({ success: true }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Failed to generate code" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Send email via Resend
+    // Send OTP via Resend
     await resend.emails.send({
       from: "SM Data Sub <no-reply@smdatasub.com.ng>",
       to: [email],
-      subject: "Reset Your Password - SM Data Sub",
+      subject: "Password Reset Code - SM Data Sub",
       html: `
         <!DOCTYPE html>
         <html>
@@ -80,11 +90,12 @@ Deno.serve(async (req) => {
             </div>
             <div style="padding: 30px;">
               <p style="color: #374151; font-size: 16px;">Hello,</p>
-              <p style="color: #374151; font-size: 16px;">We received a request to reset your password. Click the button below to set a new password:</p>
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="${resetLink}" style="background: #d42f2f; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px; display: inline-block;">Reset Password</a>
+              <p style="color: #374151; font-size: 16px;">Use the code below to reset your password:</p>
+              <div style="background: #f4f4f5; border-radius: 8px; padding: 20px; text-align: center; margin: 25px 0;">
+                <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #111827;">${code}</span>
               </div>
-              <p style="color: #6b7280; font-size: 14px;">This link expires in 1 hour. If you didn't request this, you can safely ignore this email.</p>
+              <p style="color: #6b7280; font-size: 14px;">This code expires in <strong>10 minutes</strong>.</p>
+              <p style="color: #6b7280; font-size: 14px;">If you didn't request this, please ignore this email.</p>
             </div>
             <div style="background: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; font-size: 12px; margin: 0;">© ${new Date().getFullYear()} SM Data Sub. All rights reserved.</p>
@@ -95,7 +106,7 @@ Deno.serve(async (req) => {
       `,
     });
 
-    console.log("Password reset email sent successfully");
+    console.log("Password reset OTP sent successfully");
 
     return new Response(
       JSON.stringify({ success: true }),
