@@ -46,18 +46,6 @@ export default function Auth() {
   const navigate = useNavigate();
   const { trackLogin } = useLoginTracking();
 
-  // Block web access - redirect to website with download prompt
-  useEffect(() => {
-    if (!Capacitor.isNativePlatform()) {
-      // Web browser detected - redirect to website
-      toast({
-        variant: 'destructive',
-        title: 'Mobile App Required',
-        description: 'Please download the SM Data App to login or create an account.',
-      });
-      navigate('/website', { replace: true });
-    }
-  }, [navigate, toast]);
   const { 
     isEnabled: biometricEnabled, 
     isAvailable: biometricAvailable,

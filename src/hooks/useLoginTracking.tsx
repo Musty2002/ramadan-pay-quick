@@ -31,8 +31,7 @@ export function useLoginTracking() {
           console.log('Could not get device info:', e);
         }
       } else {
-        // Web browser - this is now SUSPICIOUS since web login should be blocked
-        isSuspicious = true;
+        // Web browser login
         const userAgent = navigator.userAgent;
         deviceInfo = {
           userAgent,
@@ -40,7 +39,6 @@ export function useLoginTracking() {
           screenWidth: window.screen.width,
           screenHeight: window.screen.height,
           isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent),
-          warning: 'WEB_LOGIN_ATTEMPT_SHOULD_BE_BLOCKED',
         };
       }
 
