@@ -52,11 +52,8 @@ export function SplashScreen({ onFinish, minDuration = 2000 }: SplashScreenProps
         <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
       </div>
 
-      {/* RC Number & Version */}
-      <div className="absolute bottom-8 text-center">
-        <p className="text-white/60 text-xs font-medium">RC: 9198148</p>
-        <p className="text-white/50 text-xs mt-1">Version 1.0.0</p>
-      </div>
+      {/* RC Number */}
+      <p className="absolute bottom-8 text-white/60 text-xs font-medium">RC: 9198148</p>
     </div>
   );
 }
