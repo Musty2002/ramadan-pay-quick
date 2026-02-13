@@ -8,28 +8,6 @@
   "redirects": [
     {
       "source": "/",
-      "destination": "/website",
-      "permanent": false,
-      "has": [
-        {
-          "type": "host",
-          "value": "www.smdataapp.com.ng"
-        }
-      ]
-    },
-    {
-      "source": "/",
-      "destination": "/website",
-      "permanent": false,
-      "has": [
-        {
-          "type": "host",
-          "value": "smdataapp.com.ng"
-        }
-      ]
-    },
-    {
-      "source": "/",
       "destination": "/admin/login",
       "permanent": false,
       "has": [
