@@ -39,8 +39,6 @@ export default function Settings() {
   const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState({
     push: true,
-    email: true,
-    sms: false,
   });
 
   const handleThemeChange = (enabled: boolean) => {
@@ -129,28 +127,6 @@ export default function Settings() {
                 <Switch 
                   checked={notifications.push} 
                   onCheckedChange={(checked) => setNotifications({ ...notifications, push: checked })}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-foreground">Email Notifications</p>
-                  <p className="text-xs text-muted-foreground">Receive email updates</p>
-                </div>
-                <Switch 
-                  checked={notifications.email} 
-                  onCheckedChange={(checked) => setNotifications({ ...notifications, email: checked })}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-foreground">SMS Notifications</p>
-                  <p className="text-xs text-muted-foreground">Receive SMS alerts</p>
-                </div>
-                <Switch 
-                  checked={notifications.sms} 
-                  onCheckedChange={(checked) => setNotifications({ ...notifications, sms: checked })}
                 />
               </div>
             </CardContent>
