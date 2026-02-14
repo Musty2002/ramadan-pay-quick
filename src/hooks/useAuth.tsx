@@ -257,7 +257,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password,
     });
 
-    // Auto-create virtual account for existing users who don't have one
+    // Auto-create virtual account for all users who don't have one (including new signups after email verification)
     if (!error && data.user) {
       ensureVirtualAccount(data.user.id);
     }
