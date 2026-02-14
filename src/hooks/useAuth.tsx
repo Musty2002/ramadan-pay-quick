@@ -169,10 +169,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
-        console.log(`Creating virtual account (attempt ${attempt + 1}/${maxRetries})...`);
+        // Sanitize phone number before sending
+        let sanitizedPhone = (phoneNumber || "").replace(/[\s\-()]/g, "");
+        if (sanitizedPhone.startsWith("+234")) {
+          sanitizedPhone = "0" + sanitizedPhone.slice(4);
+        } else if (sanitizedPhone.startsWith("234") && sanitizedPhone.length === 13) {
+          sanitizedPhone = "0" + sanitizedPhone.slice(3);
+        }
+        
+        console.log(`Creating virtual account (attempt ${attempt + 1}/${maxRetries}), phone: ${sanitizedPhone}...`);
         
         const { data: vaData, error: vaError } = await supabase.functions.invoke('create-virtual-account', {
-          body: { userId, email, name, phoneNumber }
+          body: { userId, email, name, phoneNumber: sanitizedPhone }
         });
         
         if (vaError) {
