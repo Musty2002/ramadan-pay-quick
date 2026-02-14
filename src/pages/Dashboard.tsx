@@ -94,7 +94,7 @@ export default function Dashboard() {
         open={showTransactionPinSetup}
         onOpenChange={setShowTransactionPinSetup}
         onComplete={handleTransactionPinComplete}
-        isRequired={true}
+        isRequired={false}
       />
       <div
         className="safe-area-top"
