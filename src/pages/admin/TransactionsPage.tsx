@@ -58,7 +58,7 @@ interface Transaction {
     mobile_number?: string;
     plan?: number;
     plan_name?: string;
-    provider?: 'rgc' | 'elrufai';
+    provider?: 'rgc';
     error?: string;
     api_response?: any;
     [key: string]: any;
@@ -263,7 +263,6 @@ export default function TransactionsPage() {
     if (!provider) return null;
     const colors: Record<string, string> = {
       'rgc': 'bg-blue-100 text-blue-800',
-      'elrufai': 'bg-orange-100 text-orange-800',
     };
     return (
       <Badge className={colors[provider] || 'bg-gray-100 text-gray-800'} variant="outline">
