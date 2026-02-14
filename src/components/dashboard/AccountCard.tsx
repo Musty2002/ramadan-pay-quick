@@ -185,48 +185,13 @@ export function AccountCard() {
     <div className="space-y-3 mx-4 md:mx-6">
       {/* Main Wallet Card */}
       <div className="gradient-primary rounded-2xl p-5 md:p-6 text-primary-foreground shadow-lg">
-        {/* Account Info */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div className="flex flex-col">
-              {isAccountReady ? (
-                <>
-                  <span className="text-xs opacity-75">{bankName}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm opacity-90">{profile?.account_number}</span>
-                    <button onClick={copyAccountNumber} className="p-1 hover:bg-white/10 rounded">
-                      <Copy className="w-4 h-4" />
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs opacity-75">
-                    {isRetrying ? 'Creating account...' : 'Account not ready'}
-                  </span>
-                  <button
-                    onClick={retryVirtualAccountCreation}
-                    disabled={isRetrying}
-                    className="p-1 hover:bg-white/10 rounded disabled:opacity-50"
-                    title="Retry account creation"
-                  >
-                    <RefreshCw className={`w-3 h-3 ${isRetrying ? 'animate-spin' : ''}`} />
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-          {isAccountReady && (
-            <span className="text-xs opacity-75 bg-white/10 px-2 py-1 rounded">{accountName}</span>
-          )}
-        </div>
-
-        {/* User Name */}
+      {/* User Name */}
         <p className="text-sm opacity-90 mb-1">Hello,</p>
-        <h2 className="text-lg font-semibold mb-4">{profile?.full_name || 'User'} 👋</h2>
+        <h2 className="text-lg font-bold mb-4">{profile?.full_name || 'User'}</h2>
 
         {/* Balance */}
-        <div className="mb-1">
+        <div className="mb-4">
+          <p className="text-xs opacity-75 mb-1">Available Balance</p>
           <div className="flex items-center gap-2">
             <span className="text-2xl md:text-3xl font-bold">
               {showBalance ? formatBalance(wallet?.balance || 0) : '₦ ****'}
@@ -238,11 +203,37 @@ export function AccountCard() {
               {showBalance ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
           </div>
-          <p className="text-xs opacity-75">Last updated {lastUpdated}</p>
         </div>
 
+        {/* Account Info */}
+        {isAccountReady ? (
+          <div className="flex items-center justify-between bg-white/10 rounded-xl px-4 py-3 mb-4">
+            <div>
+              <span className="text-xs opacity-75">{bankName}</span>
+              <p className="text-sm font-semibold">{profile?.account_number}</p>
+            </div>
+            <button onClick={copyAccountNumber} className="p-2 hover:bg-white/10 rounded-lg">
+              <Copy className="w-5 h-5" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 bg-white/10 rounded-xl px-4 py-3 mb-4">
+            <span className="text-xs opacity-75">
+              {isRetrying ? 'Creating account...' : 'Account not ready'}
+            </span>
+            <button
+              onClick={retryVirtualAccountCreation}
+              disabled={isRetrying}
+              className="p-1 hover:bg-white/10 rounded disabled:opacity-50"
+              title="Retry account creation"
+            >
+              <RefreshCw className={`w-3 h-3 ${isRetrying ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+        )}
+
         {/* Action Buttons */}
-        <div className="flex gap-3 mt-4">
+        <div className="flex gap-3">
           <Button
             variant="secondary"
             size="sm"
