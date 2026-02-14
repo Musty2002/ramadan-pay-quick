@@ -24,7 +24,7 @@ interface DataService {
   name: string;
   category: string;
   available: boolean;
-  provider?: 'rgc' | 'elrufai'; // Track which provider this plan is from
+  provider?: 'rgc';
 }
 
 type Step = 'network' | 'category' | 'plan' | 'confirm';
@@ -122,10 +122,7 @@ export default function Data() {
         
         // Only add if not already in map (first one wins - avoids duplicates)
         if (!bundlesMap.has(dedupKey)) {
-          // Use the provider field from database (defaults to 'rgc' if not set)
-          const bundleProvider = (bundle as any).provider;
-          const provider: 'rgc' | 'elrufai' = 
-            bundleProvider === 'elrufai' ? 'elrufai' : 'rgc';
+          const provider: 'rgc' = 'rgc';
           
           bundlesMap.set(dedupKey, {
             id: parseInt(bundle.plan_code) || 0,
@@ -180,18 +177,10 @@ export default function Data() {
         return;
       }
       // Route to appropriate provider based on bundle provider
-      const provider = selectedBundle.provider || 'rgc';
-      let functionName: string;
+      const provider = 'rgc';
+      const functionName = 'rgc-services';
       
-      switch (provider) {
-        case 'elrufai':
-          functionName = 'elrufai-services';
-          break;
-        default:
-          functionName = 'rgc-services';
-      }
-      
-      console.log(`Purchasing via ${provider} provider using ${functionName}`);
+      console.log('Purchasing via RGC provider');
 
       // Build request body based on provider
       const requestBody: any = {
@@ -202,17 +191,6 @@ export default function Data() {
         mobile_number: phoneNumber,
         amount: parseFloat(selectedBundle.amount),
       };
-
-      // Elrufai needs network ID
-      if (provider === 'elrufai') {
-        const networkIdMap: Record<string, number> = {
-          'MTN': 1,
-          'Airtel': 3,
-          'Glo': 2,
-          '9mobile': 4,
-        };
-        requestBody.network = networkIdMap[selectedNetwork!] || 1;
-      }
 
       const { data, error } = await supabase.functions.invoke(functionName, {
         body: requestBody
@@ -460,9 +438,6 @@ export default function Data() {
                         <p className="text-sm font-semibold text-primary mt-2">
                           {formatPrice(parseFloat(bundle.amount))}
                         </p>
-                        {bundle.provider === 'elrufai' && (
-                          <span className="text-xs text-blue-600 font-medium">Elrufai</span>
-                        )}
                       </button>
                     ))}
                   </div>
