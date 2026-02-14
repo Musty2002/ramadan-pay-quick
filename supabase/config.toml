@@ -1,1 +1,4 @@
 project_id = "cituftdhbjdartrxfedk"
+
+[functions.create-virtual-account]
+verify_jwt = false
