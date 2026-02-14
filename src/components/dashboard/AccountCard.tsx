@@ -107,7 +107,16 @@ export function AccountCard() {
   const canWithdrawCashback = (cashbackWallet?.balance || 0) >= 100;
 
   const retryVirtualAccountCreation = async () => {
-    if (!user || !profile) return;
+    console.log('[AccountCard] retryVirtualAccountCreation called, user:', !!user, 'profile:', !!profile);
+    if (!user || !profile) {
+      console.error('[AccountCard] Missing user or profile, cannot retry');
+      toast({
+        title: 'Error',
+        description: 'Please log in first.',
+        variant: 'destructive',
+      });
+      return;
+    }
     
     setIsRetrying(true);
     try {

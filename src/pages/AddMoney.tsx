@@ -22,7 +22,16 @@ export default function AddMoney() {
   };
 
   const createVirtualAccount = async () => {
-    if (!user || !profile) return;
+    console.log('[AddMoney] createVirtualAccount called, user:', !!user, 'profile:', !!profile);
+    if (!user || !profile) {
+      console.error('[AddMoney] Missing user or profile, cannot create virtual account');
+      toast({
+        title: 'Error',
+        description: 'Please log in first to create a virtual account.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     setIsCreatingAccount(true);
     try {
