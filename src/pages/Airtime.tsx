@@ -23,7 +23,7 @@ interface AirtimeService {
   name: string | null;
   category: string;
   available: boolean;
-  provider?: 'rgc' | 'isquare';
+  provider?: 'rgc';
 }
 
 const networkLogos: Record<string, string> = {
@@ -102,36 +102,15 @@ export default function Airtime() {
 
   const fetchNetworks = async () => {
     try {
-      // Fetch from both RGC and iSquare
-      const [rgcResponse, isquareResponse] = await Promise.all([
-        supabase.functions.invoke('rgc-services', {
-          body: { action: 'get-services', serviceType: 'airtime' }
-        }),
-        supabase.functions.invoke('isquare-services', {
-          body: { action: 'get-services', serviceType: 'airtime' }
-        })
-      ]);
+      const rgcResponse = await supabase.functions.invoke('rgc-services', {
+        body: { action: 'get-services', serviceType: 'airtime' }
+      });
 
       let allNetworks: AirtimeService[] = [];
 
-      // Process RGC networks
       if (rgcResponse.data?.success && rgcResponse.data?.data) {
         const rgcNetworks = rgcResponse.data.data.map((n: AirtimeService) => ({ ...n, provider: 'rgc' as const }));
         allNetworks = [...allNetworks, ...rgcNetworks];
-      }
-
-      // Process iSquare networks (prefer iSquare for better rates)
-      if (isquareResponse.data?.success && isquareResponse.data?.data) {
-        const isquareNetworks = isquareResponse.data.data.map((n: AirtimeService) => ({ ...n, provider: 'isquare' as const }));
-        // Replace RGC networks with iSquare ones if available
-        for (const isqNetwork of isquareNetworks) {
-          const existingIndex = allNetworks.findIndex(n => n.category === isqNetwork.category);
-          if (existingIndex >= 0) {
-            allNetworks[existingIndex] = isqNetwork; // Replace with iSquare (better rates)
-          } else {
-            allNetworks.push(isqNetwork);
-          }
-        }
       }
 
       setNetworks(allNetworks);
@@ -189,11 +168,9 @@ export default function Airtime() {
     const purchaseAmount = parseFloat(amount);
     
     try {
-      // Route to appropriate provider based on network provider
-      const provider = selectedNetwork!.provider || 'rgc';
-      const functionName = provider === 'isquare' ? 'isquare-services' : 'rgc-services';
+      const functionName = 'rgc-services';
       
-      console.log(`Purchasing airtime via ${provider} provider`);
+      console.log('Purchasing airtime via RGC provider');
 
       const { data, error } = await supabase.functions.invoke(functionName, {
         body: {
@@ -202,7 +179,6 @@ export default function Airtime() {
           network: selectedNetwork!.product_id,
           amount: purchaseAmount,
           mobile_number: phoneNumber,
-          phone_number: phoneNumber, // iSquare uses phone_number
         }
       });
 

@@ -24,7 +24,7 @@ interface DataService {
   name: string;
   category: string;
   available: boolean;
-  provider?: 'rgc' | 'isquare' | 'elrufai'; // Track which provider this plan is from
+  provider?: 'rgc' | 'elrufai'; // Track which provider this plan is from
 }
 
 type Step = 'network' | 'category' | 'plan' | 'confirm';
@@ -124,8 +124,7 @@ export default function Data() {
         if (!bundlesMap.has(dedupKey)) {
           // Use the provider field from database (defaults to 'rgc' if not set)
           const bundleProvider = (bundle as any).provider;
-          const provider: 'rgc' | 'isquare' | 'elrufai' = 
-            bundleProvider === 'isquare' ? 'isquare' : 
+          const provider: 'rgc' | 'elrufai' = 
             bundleProvider === 'elrufai' ? 'elrufai' : 'rgc';
           
           bundlesMap.set(dedupKey, {
@@ -185,9 +184,6 @@ export default function Data() {
       let functionName: string;
       
       switch (provider) {
-        case 'isquare':
-          functionName = 'isquare-services';
-          break;
         case 'elrufai':
           functionName = 'elrufai-services';
           break;
@@ -204,7 +200,6 @@ export default function Data() {
         plan: selectedBundle.id,
         plan_name: selectedBundle.name,
         mobile_number: phoneNumber,
-        phone_number: phoneNumber, // iSquare uses phone_number
         amount: parseFloat(selectedBundle.amount),
       };
 
@@ -404,7 +399,6 @@ export default function Data() {
 
                   {networkCategories.map((category) => {
                     const bundleCount = allBundles.filter(b => b.category === category).length;
-                    const isISquare = category.includes('iSquare');
                     return (
                       <button
                         key={category}
@@ -418,7 +412,6 @@ export default function Data() {
                           <p className="font-semibold text-foreground">{getCategoryDisplayName(category)}</p>
                           <p className="text-xs text-muted-foreground mt-1">
                             {bundleCount} plans available
-                            {isISquare && <span className="ml-2 text-green-600">• Best Price</span>}
                           </p>
                         </div>
                         <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
@@ -467,9 +460,6 @@ export default function Data() {
                         <p className="text-sm font-semibold text-primary mt-2">
                           {formatPrice(parseFloat(bundle.amount))}
                         </p>
-                        {bundle.provider === 'isquare' && (
-                          <span className="text-xs text-green-600 font-medium">iSquare</span>
-                        )}
                         {bundle.provider === 'elrufai' && (
                           <span className="text-xs text-blue-600 font-medium">Elrufai</span>
                         )}
@@ -506,11 +496,6 @@ export default function Data() {
                       <p className="text-xl font-bold text-primary mt-1">
                         {formatPrice(parseFloat(selectedBundle.amount))}
                       </p>
-                      {selectedBundle.provider === 'isquare' && (
-                        <span className="inline-block mt-2 text-xs text-green-600 font-medium bg-green-50 px-2 py-1 rounded">
-                          ✓ Best Price via Partner
-                        </span>
-                      )}
                     </div>
                   </div>
 
