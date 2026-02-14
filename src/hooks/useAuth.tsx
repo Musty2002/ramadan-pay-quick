@@ -221,11 +221,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error as Error | null, data: data ? { user: data.user } : null };
   };
 
+  const ensureVirtualAccount = async (userId: string) => {
+    try {
+      const { data: prof } = await supabase
+        .from('profiles')
+        .select('virtual_account_name, full_name, phone, email')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (prof && !prof.virtual_account_name) {
+        console.log('Existing user missing virtual account, creating...');
+        createVirtualAccountWithRetry(
+          userId,
+          prof.email || '',
+          prof.full_name,
+          prof.phone
+        );
+      }
+    } catch (err) {
+      console.error('ensureVirtualAccount error:', err);
+    }
+  };
+
   const signIn = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+
+    // Auto-create virtual account for existing users who don't have one
+    if (!error && data.user) {
+      ensureVirtualAccount(data.user.id);
+    }
     
     return { error: error as Error | null, data: data ? { user: data.user } : null };
   };
