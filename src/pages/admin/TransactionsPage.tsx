@@ -58,7 +58,7 @@ interface Transaction {
     mobile_number?: string;
     plan?: number;
     plan_name?: string;
-    provider?: 'rgc' | 'isquare' | 'elrufai';
+    provider?: 'rgc' | 'elrufai';
     error?: string;
     api_response?: any;
     [key: string]: any;
@@ -263,7 +263,6 @@ export default function TransactionsPage() {
     if (!provider) return null;
     const colors: Record<string, string> = {
       'rgc': 'bg-blue-100 text-blue-800',
-      'isquare': 'bg-purple-100 text-purple-800',
       'elrufai': 'bg-orange-100 text-orange-800',
     };
     return (

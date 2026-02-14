@@ -62,7 +62,7 @@ interface APIDataBundle {
   name: string;
   category: string;
   available: boolean;
-  provider: 'rgc' | 'isquare' | 'elrufai';
+  provider: 'rgc' | 'elrufai';
 }
 
 const networks = [
@@ -75,7 +75,6 @@ const networks = [
 const providers = [
   { code: 'all', name: 'All Providers' },
   { code: 'rgc', name: 'RGC' },
-  { code: 'isquare', name: 'iSquare' },
   { code: 'elrufai', name: 'Elrufai' },
 ];
 
@@ -110,18 +109,13 @@ export default function DataPricingPage() {
     }
   }, [selectedNetwork, selectedCategory, selectedProvider, viewMode]);
 
-  // Fetch bundles from both RGC and iSquare APIs
+  // Fetch bundles from RGC API
   const fetchFromAPI = async () => {
     setSyncing(true);
     try {
-      const [rgcResponse, isquareResponse] = await Promise.all([
-        supabase.functions.invoke('rgc-services', {
-          body: { action: 'get-services', serviceType: 'data' }
-        }),
-        supabase.functions.invoke('isquare-services', {
-          body: { action: 'get-services', serviceType: 'data' }
-        })
-      ]);
+      const rgcResponse = await supabase.functions.invoke('rgc-services', {
+        body: { action: 'get-services', serviceType: 'data' }
+      });
 
       let bundles: APIDataBundle[] = [];
 
@@ -130,13 +124,6 @@ export default function DataPricingPage() {
           .filter((b: APIDataBundle) => b.available)
           .map((b: APIDataBundle) => ({ ...b, provider: 'rgc' as const }));
         bundles = [...bundles, ...rgcBundles];
-      }
-
-      if (isquareResponse.data?.success && isquareResponse.data?.data) {
-        const isquareBundles = isquareResponse.data.data
-          .filter((b: APIDataBundle) => b.available)
-          .map((b: APIDataBundle) => ({ ...b, provider: 'isquare' as const }));
-        bundles = [...bundles, ...isquareBundles];
       }
 
       setApiBundles(bundles);
@@ -714,8 +701,8 @@ export default function DataPricingPage() {
                           {formatPrice(parseFloat(bundle.amount))}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={bundle.provider === 'isquare' ? 'default' : bundle.provider === 'elrufai' ? 'outline' : 'secondary'}>
-                            {bundle.provider === 'isquare' ? 'iSquare' : bundle.provider === 'elrufai' ? 'Elrufai' : 'RGC'}
+                          <Badge variant={bundle.provider === 'elrufai' ? 'outline' : 'secondary'}>
+                            {bundle.provider === 'elrufai' ? 'Elrufai' : 'RGC'}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -791,8 +778,8 @@ export default function DataPricingPage() {
                             <Badge variant="outline">{bundle.data_type}</Badge>
                           </TableCell>
                           <TableCell>
-                            <Badge variant={bundle.provider === 'isquare' ? 'default' : bundle.provider === 'elrufai' ? 'outline' : 'secondary'}>
-                              {bundle.provider === 'isquare' ? 'iSquare' : bundle.provider === 'elrufai' ? 'Elrufai' : 'RGC'}
+                            <Badge variant={bundle.provider === 'elrufai' ? 'outline' : 'secondary'}>
+                              {bundle.provider === 'elrufai' ? 'Elrufai' : 'RGC'}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-muted-foreground">
@@ -850,7 +837,7 @@ export default function DataPricingPage() {
           <CardTitle>How It Works</CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-gray-600 space-y-2">
-          <p><strong>1. API Bundles:</strong> View live prices from RGC and iSquare providers</p>
+          <p><strong>1. API Bundles:</strong> View live prices from RGC provider</p>
           <p><strong>2. Import:</strong> Select bundles and click "Import" to save them to your database</p>
           <p><strong>3. Elrufai:</strong> Manually add bundles for Elrufai (API doesn't expose plan list)</p>
           <p><strong>4. Saved Bundles:</strong> Edit your selling prices (App Price) and toggle active status</p>
