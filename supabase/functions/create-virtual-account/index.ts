@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
     // Use service role client for database operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { userId, email, name, phoneNumber }: CreateVirtualAccountRequest = await req.json();
+    const { userId, email, name, phoneNumber: rawPhone }: CreateVirtualAccountRequest = await req.json();
 
     // Verify the request is for the authenticated user
     if (userId !== authenticatedUserId) {
@@ -68,7 +68,24 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Creating virtual account for user: ${userId}, email: ${email}`);
+    // Sanitize phone number: strip spaces, dashes, and convert +234 prefix to 0
+    let phoneNumber = (rawPhone || "").replace(/[\s\-()]/g, "");
+    if (phoneNumber.startsWith("+234")) {
+      phoneNumber = "0" + phoneNumber.slice(4);
+    } else if (phoneNumber.startsWith("234") && phoneNumber.length === 13) {
+      phoneNumber = "0" + phoneNumber.slice(3);
+    }
+
+    // Validate: must be exactly 11 digits
+    if (!/^\d{11}$/.test(phoneNumber)) {
+      console.error("Invalid phone number:", phoneNumber, "from raw:", rawPhone);
+      return new Response(
+        JSON.stringify({ error: "Invalid phone number", details: { status: "fail", message: "Phone number must be 11 digits (e.g. 08012345678)" } }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`Creating virtual account for user: ${userId}, email: ${email}, phone: ${phoneNumber}`);
 
     // Call PaymentPoint API to create virtual account
     const paymentPointResponse = await fetch("https://api.paymentpoint.co/api/v1/createVirtualAccount", {
