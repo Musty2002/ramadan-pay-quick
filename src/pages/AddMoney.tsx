@@ -26,12 +26,20 @@ export default function AddMoney() {
 
     setIsCreatingAccount(true);
     try {
+      // Sanitize phone number
+      let phone = (profile.phone || "").replace(/[\s\-()]/g, "");
+      if (phone.startsWith("+234")) {
+        phone = "0" + phone.slice(4);
+      } else if (phone.startsWith("234") && phone.length === 13) {
+        phone = "0" + phone.slice(3);
+      }
+
       const { data, error } = await supabase.functions.invoke('create-virtual-account', {
         body: {
           userId: user.id,
           email: profile.email || user.email,
           name: profile.full_name,
-          phoneNumber: profile.phone,
+          phoneNumber: phone,
         },
       });
 
