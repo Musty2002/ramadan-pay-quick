@@ -47,7 +47,7 @@ export default function ResellerPromo() {
                 <img 
                   src={image.src} 
                   alt={image.alt}
-                  className="w-full h-44 object-contain rounded-2xl bg-muted"
+                  className="w-full rounded-2xl"
                 />
               </div>
             ))}
