@@ -91,11 +91,11 @@ export default function Settings() {
                 <p className="text-foreground">App Version</p>
                 <p className="text-muted-foreground">1.0.0</p>
               </div>
-              <button className="w-full flex items-center justify-between py-2">
+              <button onClick={() => navigate('/terms-of-service')} className="w-full flex items-center justify-between py-2">
                 <p className="text-foreground">Terms of Service</p>
                 <ChevronRight className="w-4 h-4 text-muted-foreground" />
               </button>
-              <button className="w-full flex items-center justify-between py-2">
+              <button onClick={() => navigate('/privacy-policy')} className="w-full flex items-center justify-between py-2">
                 <p className="text-foreground">Privacy Policy</p>
                 <ChevronRight className="w-4 h-4 text-muted-foreground" />
               </button>
