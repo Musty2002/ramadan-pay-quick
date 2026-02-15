@@ -2,10 +2,7 @@ import { useState } from 'react';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { 
   ArrowLeft, 
-  Moon, 
-  Sun, 
   Bell, 
-  Globe, 
   Trash2,
   ChevronRight,
   Info
@@ -36,16 +33,9 @@ import { toast } from 'sonner';
 
 export default function Settings() {
   const navigate = useNavigate();
-  const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState({
     push: true,
   });
-
-  const handleThemeChange = (enabled: boolean) => {
-    setDarkMode(enabled);
-    // In a real app, you'd persist this and apply the theme
-    toast.success(`${enabled ? 'Dark' : 'Light'} mode enabled`);
-  };
 
   const handleDeleteAccount = () => {
     toast.error('Please contact support to delete your account');
@@ -66,30 +56,6 @@ export default function Settings() {
         </div>
 
         <div className="space-y-6">
-          {/* Appearance */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Appearance</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {darkMode ? (
-                    <Moon className="w-5 h-5 text-muted-foreground" />
-                  ) : (
-                    <Sun className="w-5 h-5 text-muted-foreground" />
-                  )}
-                  <div>
-                    <p className="font-medium text-foreground">Dark Mode</p>
-                    <p className="text-xs text-muted-foreground">Switch to dark theme</p>
-                  </div>
-                </div>
-                <Switch checked={darkMode} onCheckedChange={handleThemeChange} />
-              </div>
-
-            </CardContent>
-          </Card>
-
           {/* Notifications */}
           <Card>
             <CardHeader>
