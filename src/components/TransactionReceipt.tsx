@@ -49,7 +49,7 @@ export function TransactionReceipt({ open, onClose, transaction }: TransactionRe
   const generateTransactionId = () => {
     const dateStr = format(transaction.date, 'yyyyMMdd');
     const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase();
-    return `SMA-${dateStr}-${randomStr}`;
+    return `SMD-${dateStr}-${randomStr}`;
   };
 
   const transactionId = generateTransactionId();
@@ -136,7 +136,7 @@ export function TransactionReceipt({ open, onClose, transaction }: TransactionRe
         // Fallback to text share if file sharing not supported
         const receiptText = `
 ━━━━━━━━━━━━━━━━━━━━━━
-    SM DATA APP
+    SM DATA SUB
    TRANSACTION RECEIPT
 ━━━━━━━━━━━━━━━━━━━━━━
 
@@ -150,7 +150,7 @@ ${transaction.type === 'data' && transaction.dataPlan ? `📦 Data Plan: ${trans
 💰 Amount Paid: ₦${transaction.amount.toLocaleString()}.00
 
 ━━━━━━━━━━━━━━━━━━━━━━
-🌐 www.smdataapp.com.ng
+🌐 www.smdatasub.com.ng
 📞 Support: 09026486913
 ━━━━━━━━━━━━━━━━━━━━━━
         `.trim();
@@ -210,7 +210,7 @@ ${transaction.type === 'data' && transaction.dataPlan ? `📦 Data Plan: ${trans
               <div className="absolute inset-0 opacity-[0.02] pointer-events-none select-none overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-5xl font-black text-gray-900 rotate-[-15deg] whitespace-nowrap">
-                    SM DATA APP
+                    SM DATA SUB
                   </div>
                 </div>
               </div>
@@ -218,10 +218,10 @@ ${transaction.type === 'data' && transaction.dataPlan ? `📦 Data Plan: ${trans
               {/* Logo and Brand */}
               <div className="relative flex items-center justify-center gap-3 mb-3">
                 <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-primary/20 shadow-md">
-                  <img src={logo} alt="SM Data App" className="w-full h-full object-cover" />
+                  <img src={logo} alt="SM Data Sub" className="w-full h-full object-cover" />
                 </div>
                 <div className="text-left">
-                  <h2 className="text-lg font-black text-primary tracking-tight">SM DATA APP</h2>
+                  <h2 className="text-lg font-black text-primary tracking-tight">SM DATA SUB</h2>
                   <p className="text-[9px] text-muted-foreground tracking-[0.15em] uppercase">
                     Transaction Receipt
                   </p>
@@ -316,7 +316,7 @@ ${transaction.type === 'data' && transaction.dataPlan ? `📦 Data Plan: ${trans
 
             {/* Website Link */}
             <div className="text-center pb-3">
-              <span className="text-primary text-xs font-semibold">www.smdataapp.com.ng</span>
+              <span className="text-primary text-xs font-semibold">www.smdatasub.com.ng</span>
             </div>
 
             {/* Support Info */}
