@@ -9,6 +9,12 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
+  build: {
+    // Target older Android WebViews (Android 7+ = Chrome 51+)
+    target: "es2017",
+    // Ensure compatibility with older browsers
+    cssTarget: "chrome61",
+  },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
     alias: {

@@ -22,7 +22,14 @@ export function useNativeFeatures() {
 
   useEffect(() => {
     let mounted = true;
-    const platform = Capacitor.getPlatform();
+    let platform = 'web';
+    
+    try {
+      platform = Capacitor.getPlatform();
+    } catch (e) {
+      console.log('Capacitor.getPlatform() failed:', e);
+    }
+    
     setIsNative(platform !== 'web');
 
     const initNative = async () => {
@@ -67,16 +74,20 @@ export function useNativeFeatures() {
           // Setup back button handler with improved navigation
           try {
             App.addListener('backButton', ({ canGoBack }) => {
-              // Check if we're on a modal or can go back in history
-              const modals = document.querySelectorAll('[role="dialog"], [data-state="open"]');
-              if (modals.length > 0) {
-                // Close the modal by triggering escape key
-                document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-              } else if (canGoBack) {
-                window.history.back();
-              } else {
-                // Show exit confirmation or just exit
-                App.exitApp();
+              try {
+                // Check if we're on a modal or can go back in history
+                const modals = document.querySelectorAll('[role="dialog"], [data-state="open"]');
+                if (modals.length > 0) {
+                  // Close the modal by triggering escape key
+                  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+                } else if (canGoBack) {
+                  window.history.back();
+                } else {
+                  // Show exit confirmation or just exit
+                  App.exitApp();
+                }
+              } catch (e) {
+                console.log('Back button handler error:', e);
               }
             });
 
@@ -125,10 +136,10 @@ export function useNativeFeatures() {
       mounted = false;
       try {
         if (platform !== 'web') {
-          Keyboard.removeAllListeners();
-          App.removeAllListeners();
+          Keyboard.removeAllListeners().catch(() => {});
+          App.removeAllListeners().catch(() => {});
         }
-        Network.removeAllListeners();
+        Network.removeAllListeners().catch(() => {});
       } catch (e) {
         console.log('Cleanup listeners failed:', e);
       }
@@ -137,21 +148,27 @@ export function useNativeFeatures() {
 
   // Haptic feedback
   const hapticLight = useCallback(async () => {
-    if (Capacitor.getPlatform() !== 'web') {
-      await Haptics.impact({ style: ImpactStyle.Light });
-    }
+    try {
+      if (Capacitor.getPlatform() !== 'web') {
+        await Haptics.impact({ style: ImpactStyle.Light });
+      }
+    } catch (e) { /* ignore haptic failures */ }
   }, []);
 
   const hapticMedium = useCallback(async () => {
-    if (Capacitor.getPlatform() !== 'web') {
-      await Haptics.impact({ style: ImpactStyle.Medium });
-    }
+    try {
+      if (Capacitor.getPlatform() !== 'web') {
+        await Haptics.impact({ style: ImpactStyle.Medium });
+      }
+    } catch (e) { /* ignore haptic failures */ }
   }, []);
 
   const hapticHeavy = useCallback(async () => {
-    if (Capacitor.getPlatform() !== 'web') {
-      await Haptics.impact({ style: ImpactStyle.Heavy });
-    }
+    try {
+      if (Capacitor.getPlatform() !== 'web') {
+        await Haptics.impact({ style: ImpactStyle.Heavy });
+      }
+    } catch (e) { /* ignore haptic failures */ }
   }, []);
 
   // Share functionality
@@ -205,8 +222,12 @@ export function useNativeFeatures() {
 
   // Get app info
   const getAppInfo = useCallback(async () => {
-    if (Capacitor.getPlatform() !== 'web') {
-      return await App.getInfo();
+    try {
+      if (Capacitor.getPlatform() !== 'web') {
+        return await App.getInfo();
+      }
+    } catch (e) {
+      console.log('getAppInfo failed:', e);
     }
     return null;
   }, []);
