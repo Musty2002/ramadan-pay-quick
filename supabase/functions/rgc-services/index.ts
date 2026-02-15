@@ -79,11 +79,26 @@ async function validateElectricity(meterNumber: string, discoid: number, meterTy
   return await makeRGCRequest(endpoint);
 }
 
-async function purchaseAirtime(network: string, amount: number, mobileNumber: string) {
+// Map network category name to RGC network code
+function getNetworkCode(category: string): number {
+  const map: Record<string, number> = {
+    'MTN': 1,
+    'GLO': 2,
+    'AIRTEL': 3,
+    '9MOBILE': 4,
+    'ETISALAT': 4,
+  };
+  return map[category.toUpperCase()] || 1;
+}
+
+async function purchaseAirtime(networkCategory: string, amount: number, mobileNumber: string) {
+  const networkCode = getNetworkCode(networkCategory);
   return await makeRGCRequest('/api/v2/purchase/airtime', 'POST', {
-    network,
+    network: networkCode,
     amount,
     mobile_number: mobileNumber,
+    Ported_number: true,
+    airtime_type: 'VTU',
   });
 }
 
@@ -468,8 +483,8 @@ Deno.serve(async (req) => {
             throw new Error('Missing required fields for airtime purchase');
           }
 
-          // network should be sent as a string per RGC API docs
-          const networkValue = String(body.network);
+          // network is the category name (e.g. "MTN"), mapped to code in purchaseAirtime
+          const networkCategory = String(body.network);
 
           amount = body.amount;
           description = `Airtime purchase - ${body.mobile_number}`;
@@ -483,7 +498,7 @@ Deno.serve(async (req) => {
             });
           }
 
-          result = await purchaseAirtime(networkValue, body.amount, body.mobile_number);
+          result = await purchaseAirtime(networkCategory, body.amount, body.mobile_number);
           
           // Determine status - RGC typically returns success if the API doesn't throw
           const isSuccessful = result.success !== false && !result.error;
@@ -500,9 +515,9 @@ Deno.serve(async (req) => {
             result.reference || undefined,
             { 
               mobile_number: body.mobile_number, 
-              network: networkValue,
+              network: networkCategory,
               provider: 'rgc',
-              api_response: result // Store full API response
+              api_response: result
             }
           );
 
