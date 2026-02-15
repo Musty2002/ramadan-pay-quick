@@ -38,7 +38,7 @@ export function BlockedUserScreen({ reason, onSignOut }: BlockedUserScreenProps)
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => window.location.href = 'mailto:support@smdata.com.ng?subject=Account%20Suspension%20Appeal'}
+              onClick={() => window.location.href = 'mailto:smdatasub.ng@gmail.com?subject=Account%20Suspension%20Appeal'}
             >
               <Mail className="w-4 h-4 mr-2" />
               Contact Support
