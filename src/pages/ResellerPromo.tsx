@@ -37,17 +37,17 @@ export default function ResellerPromo() {
         </p>
 
         {/* Sliding Image Carousel */}
-        <div className="relative overflow-hidden rounded-2xl mb-6">
+        <div className="relative overflow-hidden rounded-2xl mb-6 aspect-[16/7]">
           <div 
-            className="flex transition-transform duration-700 ease-in-out"
+            className="flex transition-transform duration-700 ease-in-out h-full"
             style={{ transform: `translateX(-${currentIndex * 100}%)` }}
           >
             {promoImages.map((image, index) => (
-              <div key={index} className="w-full flex-shrink-0">
+              <div key={index} className="w-full flex-shrink-0 h-full">
                 <img 
                   src={image.src} 
                   alt={image.alt}
-                  className="w-full rounded-2xl"
+                  className="w-full h-full object-cover rounded-2xl"
                 />
               </div>
             ))}
