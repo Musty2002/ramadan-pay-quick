@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Fingerprint, User, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, User, ArrowLeft } from 'lucide-react';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,9 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { ForgotPasswordDialog } from '@/components/auth/ForgotPasswordDialog';
-import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { useLoginTracking } from '@/hooks/useLoginTracking';
-import { Capacitor } from '@capacitor/core';
 import logo from '@/assets/sm-data-sub-logo.jpeg';
 
 const signUpSchema = z.object({
@@ -46,16 +44,8 @@ export default function Auth() {
   const navigate = useNavigate();
   const { trackLogin } = useLoginTracking();
 
-  const { 
-    isEnabled: biometricEnabled, 
-    isAvailable: biometricAvailable,
-    biometryName, 
-    authenticateAndGetUser,
-    getLastLoggedInUser,
-    setLastLoggedInUser,
-    isChecking: biometricChecking 
-  } = useBiometricAuth();
-  const [biometricLoading, setBiometricLoading] = useState(false);
+  const getLastLoggedInUser = () => localStorage.getItem('last_logged_in_user');
+  const setLastLoggedInUser = (email: string) => localStorage.setItem('last_logged_in_user', email);
 
   // Check for returning user on mount
   useEffect(() => {
@@ -64,41 +54,7 @@ export default function Auth() {
       setIsReturningUser(true);
       setFormData(prev => ({ ...prev, identifier: lastUser }));
     }
-  }, [getLastLoggedInUser, isLogin]);
-
-  // Auto-trigger biometric auth for returning users
-  useEffect(() => {
-    const attemptBiometricLogin = async () => {
-      if (biometricEnabled && !biometricChecking && isLogin && isReturningUser) {
-        // Small delay to let UI render first
-        setTimeout(() => {
-          handleBiometricLogin();
-        }, 500);
-      }
-    };
-    
-    attemptBiometricLogin();
-  }, [biometricEnabled, biometricChecking, isReturningUser]);
-
-  const handleBiometricLogin = async () => {
-    setBiometricLoading(true);
-    try {
-      const userEmail = await authenticateAndGetUser();
-      
-      if (userEmail) {
-        toast({
-          title: 'Biometric Verified',
-          description: 'Authentication successful!',
-        });
-        // Auto-fill the identifier for password entry
-        setFormData(prev => ({ ...prev, identifier: userEmail }));
-      }
-    } catch (error) {
-      console.log('Biometric login cancelled or failed');
-    } finally {
-      setBiometricLoading(false);
-    }
-  };
+  }, [isLogin]);
 
   const handleSwitchUser = () => {
     setIsReturningUser(false);
@@ -279,19 +235,6 @@ export default function Auth() {
                 {loading ? 'Please wait...' : 'Login'}
               </Button>
 
-              {/* Biometric Login Button */}
-              {biometricAvailable && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full gap-2"
-                  onClick={handleBiometricLogin}
-                  disabled={biometricLoading}
-                >
-                  <Fingerprint className="w-5 h-5" />
-                  {biometricLoading ? 'Verifying...' : `Use ${biometryName}`}
-                </Button>
-              )}
             </form>
 
             <button
@@ -439,19 +382,6 @@ export default function Auth() {
                 {loading ? 'Please wait...' : isLogin ? 'Login' : 'Create Account'}
               </Button>
 
-              {/* Biometric Login Button for first-time login */}
-              {isLogin && biometricAvailable && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full gap-2"
-                  onClick={handleBiometricLogin}
-                  disabled={biometricLoading}
-                >
-                  <Fingerprint className="w-5 h-5" />
-                  {biometricLoading ? 'Verifying...' : `Login with ${biometryName}`}
-                </Button>
-              )}
             </form>
           </>
         )}
