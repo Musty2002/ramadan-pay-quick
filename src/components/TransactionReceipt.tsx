@@ -151,7 +151,7 @@ ${transaction.type === 'data' && transaction.dataPlan ? `📦 Data Plan: ${trans
 
 ━━━━━━━━━━━━━━━━━━━━━━
 🌐 www.smdatasub.com.ng
-📞 Support: 09026486913
+📞 Support: 09050799603
 ━━━━━━━━━━━━━━━━━━━━━━
         `.trim();
         
@@ -325,7 +325,7 @@ ${transaction.type === 'data' && transaction.dataPlan ? `📦 Data Plan: ${trans
               <div className="flex items-center justify-center gap-4">
                 <div className="flex items-center gap-1.5 text-white">
                   <Phone className="w-3 h-3" />
-                  <span className="text-xs font-bold">09026486913</span>
+                  <span className="text-xs font-bold">09050799603</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-white">
                   <Mail className="w-3 h-3" />

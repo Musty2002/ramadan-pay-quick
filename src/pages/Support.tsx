@@ -45,19 +45,19 @@ const contactOptions = [
     icon: MessageCircle,
     label: 'Live Chat',
     description: 'Chat with our support team',
-    action: () => window.open('https://wa.me/2349078920178', '_blank'),
+    action: () => window.open('https://wa.me/2349050799603', '_blank'),
   },
   {
     icon: Phone,
     label: 'Call Us',
-    description: '0907 892 0178',
-    action: () => window.open('tel:+2349078920178', '_blank'),
+    description: '0905 079 9603',
+    action: () => window.open('tel:+2349050799603', '_blank'),
   },
   {
     icon: Mail,
     label: 'Email Support',
-    description: 'smdatasun.ng@gmail.com',
-    action: () => window.open('mailto:smdatasun.ng@gmail.com', '_blank'),
+    description: 'smdatasub.ng@gmail.com',
+    action: () => window.open('mailto:smdatasub.ng@gmail.com', '_blank'),
   },
 ];
 

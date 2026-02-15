@@ -13,7 +13,7 @@ const categoryFilters: { label: string; value: TransactionCategory | 'all' }[] =
   { label: 'Data', value: 'data' },
   { label: 'Airtime', value: 'airtime' },
   { label: 'Bills', value: 'electricity' },
-  { label: 'Transfer', value: 'transfer' },
+  
   { label: 'Deposit', value: 'deposit' },
   { label: 'Referral', value: 'referral_bonus' },
 ];
