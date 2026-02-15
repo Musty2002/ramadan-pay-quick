@@ -158,7 +158,7 @@ export function useNativeFeatures() {
   const share = useCallback(async (options: { title?: string; text?: string; url?: string }) => {
     try {
       await Share.share({
-        title: options.title || 'SM Data App',
+        title: options.title || 'SM Data Sub',
         text: options.text,
         url: options.url,
         dialogTitle: 'Share with friends'

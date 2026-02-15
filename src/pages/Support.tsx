@@ -56,8 +56,8 @@ const contactOptions = [
   {
     icon: Mail,
     label: 'Email Support',
-    description: 'smdataapp@gmail.com',
-    action: () => window.open('mailto:smdataapp@gmail.com', '_blank'),
+    description: 'smdatasub@gmail.com',
+    action: () => window.open('mailto:smdatasub@gmail.com', '_blank'),
   },
 ];
 
