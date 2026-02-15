@@ -457,7 +457,10 @@ export default function Auth() {
         )}
 
         <p className="text-center text-xs text-muted-foreground mt-6">
-          By continuing, you agree to our Terms of Service and Privacy Policy
+          By continuing, you agree to our{' '}
+          <a href="/terms-of-service" className="text-primary underline">Terms of Service</a>{' '}
+          and{' '}
+          <a href="/privacy-policy" className="text-primary underline">Privacy Policy</a>
         </p>
       </div>
     </div>
