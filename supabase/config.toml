@@ -2,3 +2,9 @@ project_id = "cituftdhbjdartrxfedk"
 
 [functions.create-virtual-account]
 verify_jwt = false
+
+[functions.paymentpoint-webhook]
+verify_jwt = false
+
+[functions.send-push-notification]
+verify_jwt = false

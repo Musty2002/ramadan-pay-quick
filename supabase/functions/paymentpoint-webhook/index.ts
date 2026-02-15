@@ -197,10 +197,13 @@ Deno.serve(async (req) => {
         .select("endpoint")
         .eq("user_id", profile.user_id);
 
+      console.log(`Found ${pushSubscriptions?.length || 0} push subscriptions for user ${profile.user_id}`);
+
       if (pushSubscriptions && pushSubscriptions.length > 0) {
         for (const sub of pushSubscriptions) {
           try {
-            await supabase.functions.invoke('send-push-notification', {
+            console.log(`Sending credit alert push to token: ${sub.endpoint.substring(0, 20)}...`);
+            const { data: pushResult, error: pushError } = await supabase.functions.invoke('send-push-notification', {
               body: {
                 token: sub.endpoint,
                 title: "💰 Deposit Received!",
@@ -213,6 +216,11 @@ Deno.serve(async (req) => {
                 }
               }
             });
+            if (pushError) {
+              console.error("Push invoke error:", pushError);
+            } else {
+              console.log("Push result:", JSON.stringify(pushResult));
+            }
           } catch (pushErr) {
             console.error("Failed to send push notification:", pushErr);
           }
