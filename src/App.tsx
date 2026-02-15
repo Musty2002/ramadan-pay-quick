@@ -265,9 +265,18 @@ function AdminRoutes() {
 }
 
 function AppWithSplash() {
+  // Client-side redirect for admin subdomain
+  useEffect(() => {
+    const hostname = window.location.hostname;
+    if (hostname === 'admin.smdatasub.com.ng' && !window.location.pathname.startsWith('/admin')) {
+      window.location.replace('/admin/login');
+    }
+  }, []);
+
   const [showSplash, setShowSplash] = useState(() => {
     const path = window.location.pathname;
-    const isAdminRoute = path.startsWith('/admin');
+    const hostname = window.location.hostname;
+    const isAdminRoute = path.startsWith('/admin') || hostname === 'admin.smdatasub.com.ng';
     return !isAdminRoute;
   });
 
