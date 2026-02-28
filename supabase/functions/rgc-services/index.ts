@@ -93,6 +93,7 @@ function getNetworkCode(category: string): number {
 
 async function purchaseAirtime(networkCategory: string, amount: number, mobileNumber: string) {
   const networkCode = getNetworkCode(networkCategory);
+  console.log(`Airtime purchase: category=${networkCategory}, networkCode=${networkCode}, amount=${amount}, mobile=${mobileNumber}`);
   return await makeRGCRequest('/api/v2/purchase/airtime', 'POST', {
     network: networkCode,
     amount,
