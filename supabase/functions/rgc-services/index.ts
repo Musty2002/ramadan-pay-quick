@@ -95,11 +95,9 @@ async function purchaseAirtime(networkCategory: string, amount: number, mobileNu
   const networkCode = getNetworkCode(networkCategory);
   console.log(`Airtime purchase: category=${networkCategory}, networkCode=${networkCode}, amount=${amount}, mobile=${mobileNumber}`);
   return await makeRGCRequest('/api/v2/purchase/airtime', 'POST', {
-    network: networkCode,
+    network: String(networkCode),
     amount,
     mobile_number: mobileNumber,
-    Ported_number: true,
-    airtime_type: 'VTU',
   });
 }
 
