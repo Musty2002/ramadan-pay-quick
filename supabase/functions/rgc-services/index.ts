@@ -94,11 +94,24 @@ function getNetworkCode(category: string): number {
 async function purchaseAirtime(networkCategory: string, amount: number, mobileNumber: string) {
   const networkCode = getNetworkCode(networkCategory);
   console.log(`Airtime purchase: category=${networkCategory}, networkCode=${networkCode}, amount=${amount}, mobile=${mobileNumber}`);
-  return await makeRGCRequest('/api/v2/purchase/airtime', 'POST', {
-    network: String(networkCode),
-    amount,
-    mobile_number: mobileNumber,
-  });
+  
+  // Try without Ported_number first, if fails try with it
+  try {
+    return await makeRGCRequest('/api/v2/purchase/airtime', 'POST', {
+      network: String(networkCode),
+      amount,
+      mobile_number: mobileNumber,
+      Ported_number: true,
+      airtime_type: 'VTU',
+    });
+  } catch (firstError: any) {
+    console.log(`First airtime attempt failed: ${firstError.message}, retrying without extra params...`);
+    return await makeRGCRequest('/api/v2/purchase/airtime', 'POST', {
+      network: String(networkCode),
+      amount,
+      mobile_number: mobileNumber,
+    });
+  }
 }
 
 async function purchaseData(plan: number, mobileNumber: string) {
