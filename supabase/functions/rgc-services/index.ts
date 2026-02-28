@@ -80,11 +80,12 @@ async function validateElectricity(meterNumber: string, discoid: number, meterTy
 }
 
 // Map network category name to RGC network code
+// Based on RGC API: MTN=1, AIRTEL=2, GLO=3, 9MOBILE=4
 function getNetworkCode(category: string): number {
   const map: Record<string, number> = {
     'MTN': 1,
-    'GLO': 2,
-    'AIRTEL': 3,
+    'AIRTEL': 2,
+    'GLO': 3,
     '9MOBILE': 4,
     'ETISALAT': 4,
   };
