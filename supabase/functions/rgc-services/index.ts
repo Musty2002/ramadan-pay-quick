@@ -112,7 +112,7 @@ async function purchaseAirtime(networkCategory: string, amount: number, mobileNu
   // Try without Ported_number first, if fails try with it
   try {
     return await makeRGCRequest('/api/v2/purchase/airtime', 'POST', {
-      network: String(networkCode),
+      network: networkCode,
       amount,
       mobile_number: mobileNumber,
       Ported_number: true,
@@ -121,7 +121,7 @@ async function purchaseAirtime(networkCategory: string, amount: number, mobileNu
   } catch (firstError: any) {
     console.log(`First airtime attempt failed: ${firstError.message}, retrying without extra params...`);
     return await makeRGCRequest('/api/v2/purchase/airtime', 'POST', {
-      network: String(networkCode),
+      network: networkCode,
       amount,
       mobile_number: mobileNumber,
     });
