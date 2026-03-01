@@ -51,13 +51,27 @@ const networkPrefixes: Record<string, string> = {
   // Airtel prefixes
   '0802': 'AIRTEL', '0808': 'AIRTEL', '0708': 'AIRTEL', '0701': 'AIRTEL',
   '0812': 'AIRTEL', '0902': 'AIRTEL', '0901': 'AIRTEL', '0904': 'AIRTEL',
-  '0907': 'AIRTEL', '0912': 'AIRTEL',
+  '0907': 'AIRTEL', '0912': 'AIRTEL', '0911': 'AIRTEL',
   // Glo prefixes
   '0805': 'GLO', '0807': 'GLO', '0705': 'GLO', '0815': 'GLO',
   '0811': 'GLO', '0905': 'GLO', '0915': 'GLO',
   // 9mobile prefixes
   '0809': '9MOBILE', '0817': '9MOBILE', '0818': '9MOBILE', '0908': '9MOBILE',
   '0909': '9MOBILE',
+};
+
+const normalizePhoneNumber = (value: string) => {
+  const digits = value.replace(/\D/g, '');
+
+  if (digits.startsWith('234') && digits.length >= 13) {
+    return `0${digits.slice(3, 13)}`;
+  }
+
+  if (!digits.startsWith('0') && digits.length === 10) {
+    return `0${digits}`;
+  }
+
+  return digits;
 };
 
 export default function Airtime() {
@@ -72,6 +86,7 @@ export default function Airtime() {
   const [showReceipt, setShowReceipt] = useState(false);
   const [showTopUpPrompt, setShowTopUpPrompt] = useState(false);
   const [showVerifyDialog, setShowVerifyDialog] = useState(false);
+  const [manualNetworkOverride, setManualNetworkOverride] = useState(false);
   const [lastTransaction, setLastTransaction] = useState<{
     id: string;
     date: Date;
@@ -85,20 +100,28 @@ export default function Airtime() {
     fetchNetworks();
   }, []);
 
-  // Auto-detect network from phone number prefix
+  // Auto-detect network from normalized phone number prefix (unless user manually overrode)
   useEffect(() => {
-    if (phoneNumber.length >= 4 && networks.length > 0) {
-      const prefix = phoneNumber.substring(0, 4);
-      const detectedNetwork = networkPrefixes[prefix];
-      
-      if (detectedNetwork) {
-        const matchingNetwork = networks.find(n => n.category === detectedNetwork);
-        if (matchingNetwork && (!selectedNetwork || selectedNetwork.category !== detectedNetwork)) {
-          setSelectedNetwork(matchingNetwork);
-        }
+    if (manualNetworkOverride || networks.length === 0) return;
+
+    const normalizedPhone = normalizePhoneNumber(phoneNumber);
+    if (normalizedPhone.length < 4) {
+      if (!normalizedPhone) {
+        setSelectedNetwork(null);
+      }
+      return;
+    }
+
+    const prefix = normalizedPhone.substring(0, 4);
+    const detectedNetwork = networkPrefixes[prefix];
+
+    if (detectedNetwork) {
+      const matchingNetwork = networks.find((n) => n.category === detectedNetwork);
+      if (matchingNetwork && selectedNetwork?.category !== detectedNetwork) {
+        setSelectedNetwork(matchingNetwork);
       }
     }
-  }, [phoneNumber, networks]);
+  }, [phoneNumber, networks, selectedNetwork?.category, manualNetworkOverride]);
 
   const fetchNetworks = async () => {
     try {
@@ -136,6 +159,16 @@ export default function Airtime() {
       return;
     }
 
+    const normalizedPhone = normalizePhoneNumber(phoneNumber);
+    if (normalizedPhone.length !== 11) {
+      toast({
+        variant: 'destructive',
+        title: 'Invalid Phone Number',
+        description: 'Please enter a valid Nigerian phone number',
+      });
+      return;
+    }
+
     const amountNum = parseFloat(amount);
     if (amountNum < 100) {
       toast({
@@ -166,6 +199,7 @@ export default function Airtime() {
     }
     
     const purchaseAmount = parseFloat(amount);
+    const normalizedPhone = normalizePhoneNumber(phoneNumber);
     
     try {
       const functionName = 'rgc-services';
@@ -178,7 +212,7 @@ export default function Airtime() {
           serviceType: 'airtime',
           network: selectedNetwork!.category,
           amount: purchaseAmount,
-          mobile_number: phoneNumber,
+          mobile_number: normalizedPhone,
         }
       });
 
@@ -195,7 +229,7 @@ export default function Airtime() {
       setLastTransaction({
         id: data.data?.reference || `TXN-${Date.now()}`,
         date: new Date(),
-        phoneNumber,
+        phoneNumber: normalizedPhone,
         network: selectedNetwork!.category,
         amount: purchaseAmount,
         type: 'airtime',
@@ -274,7 +308,10 @@ export default function Airtime() {
                   {uniqueNetworks.map((network) => (
                     <button
                       key={network.id}
-                      onClick={() => setSelectedNetwork(network)}
+                       onClick={() => {
+                         setSelectedNetwork(network);
+                         setManualNetworkOverride(true);
+                       }}
                       className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 hover:scale-[1.02] active:scale-[0.98] ${
                         selectedNetwork?.category === network.category
                           ? 'border-primary bg-primary/5'
@@ -306,7 +343,13 @@ export default function Airtime() {
                   type="tel"
                   placeholder="Enter your phone number"
                   value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
+                   onChange={(e) => {
+                     const value = e.target.value;
+                     setPhoneNumber(value);
+                     if (!value.trim()) {
+                       setManualNetworkOverride(false);
+                     }
+                   }}
                   className="mt-2"
                 />
               </div>

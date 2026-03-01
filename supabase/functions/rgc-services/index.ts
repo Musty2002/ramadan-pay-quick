@@ -82,6 +82,13 @@ async function validateElectricity(meterNumber: string, discoid: number, meterTy
 // Map network category name to RGC network code
 // Based on RGC API: MTN=1, AIRTEL=2, GLO=3, 9MOBILE=4
 function getNetworkCode(category: string): number {
+  const normalized = category.trim().toUpperCase();
+
+  const numericCode = Number(normalized);
+  if ([1, 2, 3, 4].includes(numericCode)) {
+    return numericCode;
+  }
+
   const map: Record<string, number> = {
     'MTN': 1,
     'AIRTEL': 2,
@@ -89,12 +96,18 @@ function getNetworkCode(category: string): number {
     '9MOBILE': 4,
     'ETISALAT': 4,
   };
-  return map[category.toUpperCase()] || 1;
+
+  const code = map[normalized];
+  if (!code) {
+    throw new Error(`Unsupported network category: ${category}`);
+  }
+
+  return code;
 }
 
 async function purchaseAirtime(networkCategory: string, amount: number, mobileNumber: string) {
   const networkCode = getNetworkCode(networkCategory);
-  console.log(`Airtime purchase: category=${networkCategory}, networkCode=${networkCode}, amount=${amount}, mobile=${mobileNumber}`);
+  console.log(`Airtime purchase: category=${networkCategory.toUpperCase()}, networkCode=${networkCode}, amount=${amount}, mobile=${mobileNumber}`);
   
   // Try without Ported_number first, if fails try with it
   try {
