@@ -211,6 +211,7 @@ export default function Airtime() {
           action: 'purchase',
           serviceType: 'airtime',
           network: selectedNetwork!.category,
+          network_id: selectedNetwork!.product_id,
           amount: purchaseAmount,
           mobile_number: normalizedPhone,
         }
