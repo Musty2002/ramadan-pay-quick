@@ -12,7 +12,8 @@ interface ServiceRequest {
   action: 'get-services' | 'validate' | 'purchase';
   serviceType: 'airtime' | 'data' | 'cable' | 'electricity' | 'resultcheck';
   // For purchases
-  network?: string | number; // airtime network code / id
+  network?: string | number; // airtime network category name
+  network_id?: number; // product_id from services list for airtime
   amount?: number;
   mobile_number?: string;
   plan?: number; // product_id for data
@@ -105,9 +106,10 @@ function getNetworkCode(category: string): number {
   return code;
 }
 
-async function purchaseAirtime(networkCategory: string, amount: number, mobileNumber: string) {
-  const networkCode = getNetworkCode(networkCategory);
-  console.log(`Airtime purchase: category=${networkCategory.toUpperCase()}, networkCode=${networkCode}, amount=${amount}, mobile=${mobileNumber}`);
+async function purchaseAirtime(networkCategory: string, amount: number, mobileNumber: string, networkId?: number) {
+  // Use product_id from services list if available, otherwise fall back to hardcoded mapping
+  const networkCode = networkId || getNetworkCode(networkCategory);
+  console.log(`Airtime purchase: category=${networkCategory.toUpperCase()}, networkCode=${networkCode}, networkId=${networkId}, amount=${amount}, mobile=${mobileNumber}`);
   
   // Try without Ported_number first, if fails try with it
   try {
