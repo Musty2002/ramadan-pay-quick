@@ -372,7 +372,8 @@ export default function TransactionsPage() {
                   <TableHead>User</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Category</TableHead>
-                  <TableHead>Provider</TableHead>
+                   <TableHead>Network</TableHead>
+                   <TableHead>Provider</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Reference</TableHead>
@@ -409,6 +410,13 @@ export default function TransactionsPage() {
                         </div>
                       </TableCell>
                       <TableCell className="capitalize">{txn.category}</TableCell>
+                      <TableCell>
+                        {txn.metadata?.network ? (
+                          <Badge variant="outline" className="font-medium">
+                            {txn.metadata.network}
+                          </Badge>
+                        ) : '-'}
+                      </TableCell>
                       <TableCell>
                         {getProviderBadge(txn.metadata?.provider)}
                       </TableCell>
