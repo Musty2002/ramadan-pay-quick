@@ -40,7 +40,7 @@ const networkColors: Record<string, string> = {
   '9MOBILE': 'bg-emerald-600/10 border-emerald-600',
 };
 
-const quickAmounts = [100, 200, 500, 1000, 2000, 5000, 10000];
+const quickAmounts = [50, 100, 200, 500, 1000, 2000, 5000, 10000];
 
 // Phone prefix to network mapping
 const networkPrefixes: Record<string, string> = {
@@ -170,11 +170,11 @@ export default function Airtime() {
     }
 
     const amountNum = parseFloat(amount);
-    if (amountNum < 100) {
+    if (amountNum < 50) {
       toast({
         variant: 'destructive',
         title: 'Invalid Amount',
-        description: 'Minimum airtime amount is ₦100',
+        description: 'Minimum airtime amount is ₦50',
       });
       return;
     }
