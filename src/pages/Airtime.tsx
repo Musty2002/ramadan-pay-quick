@@ -23,7 +23,7 @@ interface AirtimeService {
   name: string | null;
   category: string;
   available: boolean;
-  provider?: 'rgc';
+  provider?: 'rgc' | 'isquare';
 }
 
 const networkLogos: Record<string, string> = {
@@ -125,15 +125,15 @@ export default function Airtime() {
 
   const fetchNetworks = async () => {
     try {
-      const rgcResponse = await supabase.functions.invoke('rgc-services', {
+      const isquareResponse = await supabase.functions.invoke('isquare-services', {
         body: { action: 'get-services', serviceType: 'airtime' }
       });
 
       let allNetworks: AirtimeService[] = [];
 
-      if (rgcResponse.data?.success && rgcResponse.data?.data) {
-        const rgcNetworks = rgcResponse.data.data.map((n: AirtimeService) => ({ ...n, provider: 'rgc' as const }));
-        allNetworks = [...allNetworks, ...rgcNetworks];
+      if (isquareResponse.data?.success && isquareResponse.data?.data) {
+        const isquareNetworks = isquareResponse.data.data.map((n: AirtimeService) => ({ ...n, provider: 'isquare' as const }));
+        allNetworks = [...allNetworks, ...isquareNetworks];
       }
 
       setNetworks(allNetworks);
@@ -202,18 +202,17 @@ export default function Airtime() {
     const normalizedPhone = normalizePhoneNumber(phoneNumber);
     
     try {
-      const functionName = 'rgc-services';
+      const functionName = 'isquare-services';
       
-      console.log('Purchasing airtime via RGC provider');
+      console.log('Purchasing airtime via iSquare provider');
 
       const { data, error } = await supabase.functions.invoke(functionName, {
         body: {
           action: 'purchase',
           serviceType: 'airtime',
-          network: selectedNetwork!.category,
-          network_id: selectedNetwork!.product_id,
+          network: selectedNetwork!.product_id,
           amount: purchaseAmount,
-          mobile_number: normalizedPhone,
+          phone_number: normalizedPhone,
         }
       });
 
