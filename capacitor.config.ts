@@ -4,10 +4,10 @@ const config: CapacitorConfig = {
   appId: 'com.sirsmarewaltd.smdatasub',
   appName: 'SM Data Sub',
   webDir: 'dist',
-  server: {
-    url: 'https://40aa5428-55b3-4700-a5c9-9ba75e861f84.lovableproject.com?forceHideBadge=true',
-    cleartext: true
-  },
+  // server: {
+  //   url: 'https://40aa5428-55b3-4700-a5c9-9ba75e861f84.lovableproject.com?forceHideBadge=true',
+  //   cleartext: true
+  // },
   plugins: {
     SplashScreen: {
       launchShowDuration: 2000,
