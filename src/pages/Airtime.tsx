@@ -10,7 +10,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { TransactionReceipt } from '@/components/TransactionReceipt';
 import { getEdgeFunctionErrorMessage } from '@/lib/edgeFunctionError';
 import { TransactionVerifyDialog } from '@/components/auth/TransactionVerifyDialog';
-// Import network logos
 import mtnLogo from '@/assets/networks/mtn-logo.png';
 import airtelLogo from '@/assets/networks/airtel-logo.png';
 import gloLogo from '@/assets/networks/glo-logo.png';
@@ -40,37 +39,36 @@ const networkColors: Record<string, string> = {
   '9MOBILE': 'bg-emerald-600/10 border-emerald-600',
 };
 
+const networkAccentColors: Record<string, string> = {
+  'MTN': 'from-yellow-400 to-yellow-500',
+  'AIRTEL': 'from-red-500 to-red-600',
+  'GLO': 'from-green-500 to-green-600',
+  '9MOBILE': 'from-emerald-500 to-emerald-600',
+};
+
 const quickAmounts = [50, 100, 200, 500, 1000, 2000, 5000, 10000];
 
-// Phone prefix to network mapping
 const networkPrefixes: Record<string, string> = {
-  // MTN prefixes
   '0803': 'MTN', '0806': 'MTN', '0703': 'MTN', '0706': 'MTN',
   '0813': 'MTN', '0816': 'MTN', '0810': 'MTN', '0814': 'MTN',
   '0903': 'MTN', '0906': 'MTN', '0913': 'MTN', '0916': 'MTN',
-  // Airtel prefixes
   '0802': 'AIRTEL', '0808': 'AIRTEL', '0708': 'AIRTEL', '0701': 'AIRTEL',
   '0812': 'AIRTEL', '0902': 'AIRTEL', '0901': 'AIRTEL', '0904': 'AIRTEL',
   '0907': 'AIRTEL', '0912': 'AIRTEL', '0911': 'AIRTEL',
-  // Glo prefixes
   '0805': 'GLO', '0807': 'GLO', '0705': 'GLO', '0815': 'GLO',
   '0811': 'GLO', '0905': 'GLO', '0915': 'GLO',
-  // 9mobile prefixes
   '0809': '9MOBILE', '0817': '9MOBILE', '0818': '9MOBILE', '0908': '9MOBILE',
   '0909': '9MOBILE',
 };
 
 const normalizePhoneNumber = (value: string) => {
   const digits = value.replace(/\D/g, '');
-
   if (digits.startsWith('234') && digits.length >= 13) {
     return `0${digits.slice(3, 13)}`;
   }
-
   if (!digits.startsWith('0') && digits.length === 10) {
     return `0${digits}`;
   }
-
   return digits;
 };
 
@@ -86,7 +84,7 @@ export default function Airtime() {
   const [showReceipt, setShowReceipt] = useState(false);
   const [showTopUpPrompt, setShowTopUpPrompt] = useState(false);
   const [showVerifyDialog, setShowVerifyDialog] = useState(false);
-  const [manualNetworkOverride, setManualNetworkOverride] = useState(false);
+  const [step, setStep] = useState<1 | 2>(1);
   const [lastTransaction, setLastTransaction] = useState<{
     id: string;
     date: Date;
@@ -100,28 +98,17 @@ export default function Airtime() {
     fetchNetworks();
   }, []);
 
-  // Auto-detect network from normalized phone number prefix (unless user manually overrode)
+  // Auto-detect network from phone number on step 2
   useEffect(() => {
-    if (manualNetworkOverride || networks.length === 0) return;
-
+    if (step !== 2 || networks.length === 0) return;
     const normalizedPhone = normalizePhoneNumber(phoneNumber);
-    if (normalizedPhone.length < 4) {
-      if (!normalizedPhone) {
-        setSelectedNetwork(null);
-      }
-      return;
-    }
-
+    if (normalizedPhone.length < 4) return;
     const prefix = normalizedPhone.substring(0, 4);
     const detectedNetwork = networkPrefixes[prefix];
-
-    if (detectedNetwork) {
-      const matchingNetwork = networks.find((n) => n.category === detectedNetwork);
-      if (matchingNetwork && selectedNetwork?.category !== detectedNetwork) {
-        setSelectedNetwork(matchingNetwork);
-      }
+    if (detectedNetwork && detectedNetwork !== selectedNetwork?.category) {
+      // Don't auto-switch network on step 2, user already chose
     }
-  }, [phoneNumber, networks, selectedNetwork?.category, manualNetworkOverride]);
+  }, [phoneNumber, networks, selectedNetwork?.category, step]);
 
   const fetchNetworks = async () => {
     try {
@@ -130,12 +117,10 @@ export default function Airtime() {
       });
 
       let allNetworks: AirtimeService[] = [];
-
       if (isquareResponse.data?.success && isquareResponse.data?.data) {
         const isquareNetworks = isquareResponse.data.data.map((n: AirtimeService) => ({ ...n, provider: 'isquare' as const }));
         allNetworks = [...allNetworks, ...isquareNetworks];
       }
-
       setNetworks(allNetworks);
     } catch (error: any) {
       console.error('Error fetching networks:', error);
@@ -149,37 +134,37 @@ export default function Airtime() {
     }
   };
 
+  const handleNetworkSelect = (network: AirtimeService) => {
+    setSelectedNetwork(network);
+    setStep(2);
+  };
+
+  const handleBack = () => {
+    if (step === 2) {
+      setStep(1);
+      setPhoneNumber('');
+      setAmount('');
+      setShowTopUpPrompt(false);
+    } else {
+      navigate('/dashboard');
+    }
+  };
+
   const initiateTransaction = () => {
     if (!selectedNetwork || !phoneNumber || !amount) {
-      toast({
-        variant: 'destructive',
-        title: 'Missing Information',
-        description: 'Please fill in all fields',
-      });
+      toast({ variant: 'destructive', title: 'Missing Information', description: 'Please fill in all fields' });
       return;
     }
-
     const normalizedPhone = normalizePhoneNumber(phoneNumber);
     if (normalizedPhone.length !== 11) {
-      toast({
-        variant: 'destructive',
-        title: 'Invalid Phone Number',
-        description: 'Please enter a valid Nigerian phone number',
-      });
+      toast({ variant: 'destructive', title: 'Invalid Phone Number', description: 'Please enter a valid Nigerian phone number' });
       return;
     }
-
     const amountNum = parseFloat(amount);
     if (amountNum < 50) {
-      toast({
-        variant: 'destructive',
-        title: 'Invalid Amount',
-        description: 'Minimum airtime amount is ₦50',
-      });
+      toast({ variant: 'destructive', title: 'Invalid Amount', description: 'Minimum airtime amount is ₦50' });
       return;
     }
-
-    // Show verification dialog
     setShowVerifyDialog(true);
   };
 
@@ -189,11 +174,7 @@ export default function Airtime() {
     setShowTopUpPrompt(false);
     
     if (!selectedNetwork) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Please select a network first.',
-      });
+      toast({ variant: 'destructive', title: 'Error', description: 'Please select a network first.' });
       setPurchasing(false);
       return;
     }
@@ -202,15 +183,11 @@ export default function Airtime() {
     const normalizedPhone = normalizePhoneNumber(phoneNumber);
     
     try {
-      const functionName = 'isquare-services';
-      
-      console.log('Purchasing airtime via iSquare provider');
-
-      const { data, error } = await supabase.functions.invoke(functionName, {
+      const { data, error } = await supabase.functions.invoke('isquare-services', {
         body: {
           action: 'purchase',
           serviceType: 'airtime',
-          network: selectedNetwork!.product_id,
+          network: selectedNetwork.product_id,
           amount: purchaseAmount,
           phone_number: normalizedPhone,
         }
@@ -220,51 +197,39 @@ export default function Airtime() {
         const message = await getEdgeFunctionErrorMessage(error);
         throw new Error(message || 'Purchase failed');
       }
-
       if (!data?.success) {
         throw new Error(data?.message || 'Purchase failed');
       }
 
-      // Set transaction data and show receipt
       setLastTransaction({
         id: data.data?.reference || `TXN-${Date.now()}`,
         date: new Date(),
         phoneNumber: normalizedPhone,
-        network: selectedNetwork!.category,
+        network: selectedNetwork.category,
         amount: purchaseAmount,
         type: 'airtime',
       });
       setShowReceipt(true);
-      
-      // Reset form
       setPhoneNumber('');
       setAmount('');
       setSelectedNetwork(null);
+      setStep(1);
     } catch (error: any) {
       console.error('Purchase error:', error);
-      
-      // Parse error message for user-friendly display
       let errorTitle = 'Purchase Failed';
       let errorDescription = error.message || 'Unable to complete purchase. Please try again.';
-      
-      // Only show insufficient balance prompt for USER wallet issues (exact match from our edge function)
       const isUserInsufficientBalance = error.message === 'Insufficient balance';
       
       if (isUserInsufficientBalance) {
         errorTitle = 'Insufficient Balance';
-        errorDescription = 'You don\'t have enough funds in your wallet.';
+        errorDescription = "You don't have enough funds in your wallet.";
         setShowTopUpPrompt(true);
       } else if (error.message?.toLowerCase().includes('invalid phone')) {
         errorTitle = 'Invalid Phone Number';
         errorDescription = 'Please check the phone number and try again.';
       }
-      // All other errors (including provider issues) just show generic "Purchase Failed"
       
-      toast({
-        variant: 'destructive',
-        title: errorTitle,
-        description: errorDescription,
-      });
+      toast({ variant: 'destructive', title: errorTitle, description: errorDescription });
     } finally {
       setPurchasing(false);
     }
@@ -278,7 +243,6 @@ export default function Airtime() {
     }).format(price);
   };
 
-  // Get unique networks
   const uniqueNetworks = networks.filter((network, index, self) =>
     index === self.findIndex((n) => n.category === network.category)
   );
@@ -288,10 +252,12 @@ export default function Airtime() {
       <div className="safe-area-top">
         {/* Header */}
         <div className="flex items-center gap-4 px-4 py-4">
-          <button onClick={() => navigate('/dashboard')} className="p-2 -ml-2">
+          <button onClick={handleBack} className="p-2 -ml-2">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-lg font-bold text-foreground">Buy Airtime</h1>
+          <h1 className="text-lg font-bold text-foreground">
+            {step === 1 ? 'Buy Airtime' : `${selectedNetwork?.category} Airtime`}
+          </h1>
         </div>
 
         <div className="px-4 pb-6">
@@ -299,68 +265,81 @@ export default function Airtime() {
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
+          ) : step === 1 ? (
+            /* ========== STEP 1: Network Selection ========== */
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground mb-2">Choose your network to continue</p>
+              <div className="grid grid-cols-2 gap-4">
+                {uniqueNetworks.map((network) => (
+                  <button
+                    key={network.id}
+                    onClick={() => handleNetworkSelect(network)}
+                    className={`p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 hover:scale-[1.02] active:scale-[0.98] ${
+                      networkColors[network.category] || 'border-border bg-card'
+                    }`}
+                  >
+                    <div className="w-16 h-16 rounded-xl bg-white flex items-center justify-center shadow-sm overflow-hidden">
+                      {networkLogos[network.category] ? (
+                        <img
+                          src={networkLogos[network.category]}
+                          alt={network.category}
+                          className="w-12 h-12 object-contain rounded-lg"
+                        />
+                      ) : (
+                        <span className="text-xl font-bold">{network.category.charAt(0)}</span>
+                      )}
+                    </div>
+                    <p className="text-sm font-semibold text-foreground">{network.category}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           ) : (
-            <>
-              {/* Network Selection */}
-              <div className="mb-6">
-                <Label className="mb-3 block">Select Network</Label>
-                <div className="grid grid-cols-2 gap-4">
-                  {uniqueNetworks.map((network) => (
-                    <button
-                      key={network.id}
-                       onClick={() => {
-                         setSelectedNetwork(network);
-                         setManualNetworkOverride(true);
-                       }}
-                      className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 hover:scale-[1.02] active:scale-[0.98] ${
-                        selectedNetwork?.category === network.category
-                          ? 'border-primary bg-primary/5'
-                          : networkColors[network.category] || 'border-border bg-card'
-                      }`}
-                    >
-                      <div className="w-14 h-14 rounded-xl bg-white flex items-center justify-center shadow-sm overflow-hidden">
-                        {networkLogos[network.category] ? (
-                          <img 
-                            src={networkLogos[network.category]} 
-                            alt={network.category} 
-                            className="w-10 h-10 object-contain rounded-lg"
-                          />
-                        ) : (
-                          <span className="text-lg font-bold">{network.category.charAt(0)}</span>
-                        )}
-                      </div>
-                      <p className="text-sm font-semibold text-foreground">{network.category}</p>
-                    </button>
-                  ))}
+            /* ========== STEP 2: Purchase Form ========== */
+            <div className="space-y-6">
+              {/* Selected Network Banner */}
+              <div className={`flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r ${networkAccentColors[selectedNetwork?.category || ''] || 'from-primary to-primary'} text-white`}>
+                <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center overflow-hidden">
+                  {selectedNetwork && networkLogos[selectedNetwork.category] ? (
+                    <img
+                      src={networkLogos[selectedNetwork.category]}
+                      alt={selectedNetwork.category}
+                      className="w-7 h-7 object-contain"
+                    />
+                  ) : null}
                 </div>
+                <div>
+                  <p className="font-semibold text-sm">{selectedNetwork?.category}</p>
+                  <p className="text-xs opacity-80">Airtime Top-up</p>
+                </div>
+                <button
+                  onClick={() => setStep(1)}
+                  className="ml-auto text-xs bg-white/20 rounded-lg px-3 py-1.5 font-medium hover:bg-white/30 transition-colors"
+                >
+                  Change
+                </button>
               </div>
 
               {/* Phone Number */}
-              <div className="mb-6">
+              <div>
                 <Label htmlFor="phone">Phone Number</Label>
                 <Input
                   id="phone"
                   type="tel"
-                  placeholder="Enter your phone number"
+                  placeholder="Enter phone number"
                   value={phoneNumber}
-                   onChange={(e) => {
-                     const value = e.target.value;
-                     setPhoneNumber(value);
-                     if (!value.trim()) {
-                       setManualNetworkOverride(false);
-                     }
-                   }}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
                   className="mt-2"
                 />
               </div>
 
               {/* Amount */}
-              <div className="mb-4">
+              <div>
                 <Label htmlFor="amount">Amount</Label>
                 <Input
                   id="amount"
                   type="number"
-                  placeholder="Enter amount"
+                  placeholder="Enter amount (min ₦50)"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   className="mt-2"
@@ -368,7 +347,8 @@ export default function Airtime() {
               </div>
 
               {/* Quick Amounts */}
-              <div className="mb-6">
+              <div>
+                <Label className="mb-2 block text-xs text-muted-foreground">Quick Select</Label>
                 <div className="flex flex-wrap gap-2">
                   {quickAmounts.map((amt) => (
                     <button
@@ -391,7 +371,7 @@ export default function Airtime() {
                 className="w-full"
                 size="lg"
                 onClick={initiateTransaction}
-                disabled={!selectedNetwork || !phoneNumber || !amount || purchasing}
+                disabled={!phoneNumber || !amount || purchasing}
               >
                 {purchasing ? (
                   <>
@@ -399,13 +379,13 @@ export default function Airtime() {
                     Processing...
                   </>
                 ) : (
-                  'Buy Airtime'
+                  `Buy ${amount ? formatPrice(parseFloat(amount)) : ''} Airtime`
                 )}
               </Button>
 
               {/* Top Up Prompt */}
               {showTopUpPrompt && (
-                <div className="mt-4 p-4 rounded-xl bg-amber-50 border border-amber-200 dark:bg-amber-950/30 dark:border-amber-800">
+                <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 dark:bg-amber-950/30 dark:border-amber-800">
                   <p className="text-sm text-amber-800 dark:text-amber-200 mb-3">
                     Your wallet balance is insufficient for this purchase.
                   </p>
@@ -418,12 +398,11 @@ export default function Airtime() {
                   </Button>
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Transaction Verification Dialog */}
       <TransactionVerifyDialog
         open={showVerifyDialog}
         onOpenChange={setShowVerifyDialog}
@@ -433,7 +412,6 @@ export default function Airtime() {
         amount={parseFloat(amount) || 0}
       />
 
-      {/* Transaction Receipt Modal */}
       {lastTransaction && (
         <TransactionReceipt
           open={showReceipt}
