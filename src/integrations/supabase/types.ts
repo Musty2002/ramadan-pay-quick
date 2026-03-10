@@ -592,6 +592,10 @@ export type Database = {
     }
     Functions: {
       block_all_web_users: { Args: never; Returns: undefined }
+      deduct_wallet_balance: {
+        Args: { _amount: number; _user_id: string }
+        Returns: boolean
+      }
       generate_account_number: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
       has_role: {

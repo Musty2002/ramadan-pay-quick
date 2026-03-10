@@ -138,32 +138,18 @@ async function recordTransaction(
 }
 
 async function deductFromWallet(supabase: any, userId: string, amount: number): Promise<boolean> {
-  const { data: wallet, error: fetchError } = await supabase
-    .from('wallets')
-    .select('balance')
-    .eq('user_id', userId)
-    .single();
+  // Atomic deduction using database function to prevent race conditions
+  const { data, error } = await supabase.rpc('deduct_wallet_balance', {
+    _user_id: userId,
+    _amount: amount,
+  });
 
-  if (fetchError || !wallet) {
-    console.error('Error fetching wallet:', fetchError);
+  if (error) {
+    console.error('Error deducting from wallet:', error);
     return false;
   }
 
-  if (wallet.balance < amount) {
-    return false;
-  }
-
-  const { error: updateError } = await supabase
-    .from('wallets')
-    .update({ balance: wallet.balance - amount, updated_at: new Date().toISOString() })
-    .eq('user_id', userId);
-
-  if (updateError) {
-    console.error('Error deducting from wallet:', updateError);
-    return false;
-  }
-
-  return true;
+  return data === true;
 }
 
 // Calculate cashback for data (5 naira per 1GB)
