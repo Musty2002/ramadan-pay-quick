@@ -107,17 +107,10 @@ export default function AdminDashboard() {
       change: '+24%'
     },
     {
-      title: 'Transaction Volume',
-      value: `₦${stats?.transactionVolume?.toLocaleString() || '0'}`,
-      icon: TrendingUp,
-      color: 'bg-orange-500',
-      change: '+15%'
-    },
-    {
       title: '24h Transaction Volume',
       value: `₦${stats?.transactionVolume24h?.toLocaleString() || '0'}`,
       icon: TrendingUp,
-      color: 'bg-cyan-500',
+      color: 'bg-orange-500',
       change: 'Last 24 hours'
     }
   ];
@@ -130,7 +123,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat, index) => (
           <Card key={index} className="relative overflow-hidden">
             <CardContent className="p-6">
