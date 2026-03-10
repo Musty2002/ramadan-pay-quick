@@ -33,13 +33,16 @@ export default function AdminDashboard() {
   const fetchStats = async () => {
     try {
       // Fetch all stats in parallel
+      const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
       const [
         { count: totalUsers },
         { data: wallets },
         { count: totalTransactions },
         { data: todayTxns },
         { data: recentTxns },
-        { data: volumeData }
+        { data: volumeData },
+        { data: volume24hData }
       ] = await Promise.all([
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
         supabase.from('wallets').select('balance'),
@@ -49,11 +52,13 @@ export default function AdminDashboard() {
           *,
           profiles!transactions_user_id_fkey(full_name, email)
         `).order('created_at', { ascending: false }).limit(10),
-        supabase.from('transactions').select('amount, type').eq('status', 'completed')
+        supabase.from('transactions').select('amount, type').eq('status', 'completed'),
+        supabase.from('transactions').select('amount').eq('status', 'completed').gte('created_at', last24h)
       ]);
 
       const totalBalance = wallets?.reduce((sum, w) => sum + Number(w.balance), 0) || 0;
       const transactionVolume = volumeData?.reduce((sum, t) => sum + Number(t.amount), 0) || 0;
+      const transactionVolume24h = volume24hData?.reduce((sum, t) => sum + Number(t.amount), 0) || 0;
 
       setStats({
         totalUsers: totalUsers || 0,
@@ -61,7 +66,8 @@ export default function AdminDashboard() {
         totalTransactions: totalTransactions || 0,
         todayTransactions: todayTxns?.length || 0,
         recentTransactions: recentTxns || [],
-        transactionVolume
+        transactionVolume,
+        transactionVolume24h
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
