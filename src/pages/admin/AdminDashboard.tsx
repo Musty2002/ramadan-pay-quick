@@ -107,17 +107,10 @@ export default function AdminDashboard() {
       change: '+24%'
     },
     {
-      title: 'Transaction Volume',
-      value: `₦${stats?.transactionVolume?.toLocaleString() || '0'}`,
-      icon: TrendingUp,
-      color: 'bg-orange-500',
-      change: '+15%'
-    },
-    {
       title: '24h Transaction Volume',
       value: `₦${stats?.transactionVolume24h?.toLocaleString() || '0'}`,
       icon: TrendingUp,
-      color: 'bg-cyan-500',
+      color: 'bg-orange-500',
       change: 'Last 24 hours'
     }
   ];
