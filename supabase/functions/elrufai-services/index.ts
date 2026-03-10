@@ -428,8 +428,10 @@ Deno.serve(async (req) => {
       }
 
       // Rate limit check - 60 second cooldown between purchases
+      console.log(`Checking rate limit for user ${userId}`);
       const rateLimit = await checkRateLimit(supabase, userId);
       if (!rateLimit.allowed) {
+        console.log(`Rate limit hit for user ${userId}, retry after ${rateLimit.retryAfter}s`);
         return new Response(JSON.stringify({ 
           success: false, 
           message: `Please wait ${rateLimit.retryAfter} seconds before making another purchase` 
@@ -438,6 +440,7 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
+      console.log(`Rate limit passed for user ${userId}`);
 
       const amount = body.amount || 0;
       
