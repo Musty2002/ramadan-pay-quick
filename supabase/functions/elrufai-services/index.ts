@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { validateUserAccount } from '../_shared/validate-account.ts';
+import { checkRateLimit } from '../_shared/rate-limit.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -422,6 +423,18 @@ Deno.serve(async (req) => {
       if (!accountValidation.valid) {
         return new Response(JSON.stringify({ success: false, message: accountValidation.error }), {
           status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Rate limit check - 60 second cooldown between purchases
+      const rateLimit = await checkRateLimit(supabase, userId);
+      if (!rateLimit.allowed) {
+        return new Response(JSON.stringify({ 
+          success: false, 
+          message: `Please wait ${rateLimit.retryAfter} seconds before making another purchase` 
+        }), {
+          status: 429,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }

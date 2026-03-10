@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 const KEEP_ALIVE_INTERVAL = 4 * 60 * 1000; // 4 minutes (before 5-minute timeout)
 
 export function useKeepAlive() {
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     const pingBackend = async () => {
