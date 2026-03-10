@@ -19,6 +19,7 @@ interface DashboardStats {
   todayTransactions: number;
   recentTransactions: any[];
   transactionVolume: number;
+  transactionVolume24h: number;
 }
 
 export default function AdminDashboard() {
