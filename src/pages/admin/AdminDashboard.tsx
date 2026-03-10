@@ -19,6 +19,7 @@ interface DashboardStats {
   todayTransactions: number;
   recentTransactions: any[];
   transactionVolume: number;
+  transactionVolume24h: number;
 }
 
 export default function AdminDashboard() {
@@ -32,13 +33,16 @@ export default function AdminDashboard() {
   const fetchStats = async () => {
     try {
       // Fetch all stats in parallel
+      const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
       const [
         { count: totalUsers },
         { data: wallets },
         { count: totalTransactions },
         { data: todayTxns },
         { data: recentTxns },
-        { data: volumeData }
+        { data: volumeData },
+        { data: volume24hData }
       ] = await Promise.all([
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
         supabase.from('wallets').select('balance'),
@@ -48,11 +52,13 @@ export default function AdminDashboard() {
           *,
           profiles!transactions_user_id_fkey(full_name, email)
         `).order('created_at', { ascending: false }).limit(10),
-        supabase.from('transactions').select('amount, type').eq('status', 'completed')
+        supabase.from('transactions').select('amount, type').eq('status', 'completed'),
+        supabase.from('transactions').select('amount').eq('status', 'completed').gte('created_at', last24h)
       ]);
 
       const totalBalance = wallets?.reduce((sum, w) => sum + Number(w.balance), 0) || 0;
       const transactionVolume = volumeData?.reduce((sum, t) => sum + Number(t.amount), 0) || 0;
+      const transactionVolume24h = volume24hData?.reduce((sum, t) => sum + Number(t.amount), 0) || 0;
 
       setStats({
         totalUsers: totalUsers || 0,
@@ -60,7 +66,8 @@ export default function AdminDashboard() {
         totalTransactions: totalTransactions || 0,
         todayTransactions: todayTxns?.length || 0,
         recentTransactions: recentTxns || [],
-        transactionVolume
+        transactionVolume,
+        transactionVolume24h
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -105,6 +112,13 @@ export default function AdminDashboard() {
       icon: TrendingUp,
       color: 'bg-orange-500',
       change: '+15%'
+    },
+    {
+      title: '24h Transaction Volume',
+      value: `₦${stats?.transactionVolume24h?.toLocaleString() || '0'}`,
+      icon: TrendingUp,
+      color: 'bg-cyan-500',
+      change: 'Last 24 hours'
     }
   ];
 
@@ -116,7 +130,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         {statCards.map((stat, index) => (
           <Card key={index} className="relative overflow-hidden">
             <CardContent className="p-6">
