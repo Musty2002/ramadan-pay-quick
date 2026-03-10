@@ -489,6 +489,18 @@ Deno.serve(async (req) => {
         });
       }
 
+      // Rate limit check - 60 second cooldown between purchases
+      const rateLimit = await checkRateLimit(supabase, userId);
+      if (!rateLimit.allowed) {
+        return new Response(JSON.stringify({ 
+          success: false, 
+          message: `Please wait ${rateLimit.retryAfter} seconds before making another purchase` 
+        }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
       let amount = 0;
       let description = '';
 
