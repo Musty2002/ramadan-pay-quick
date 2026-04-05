@@ -302,7 +302,7 @@ ${transaction.type === 'data' && transaction.dataPlan ? `📦 Data Plan: ${trans
                       </div>
                     )}
                     <span className={`text-xs font-bold capitalize ${networkColors[networkKey] || 'text-gray-800'}`}>
-                      {transaction.network.toLowerCase()}
+                      {(transaction.network || '').toString().toLowerCase()}
                     </span>
                   </div>
                 </div>
