@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Contact } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
+import { Contacts } from '@capacitor-community/contacts';
 import { toast } from 'sonner';
 
 interface PhoneInputWithContactsProps {
