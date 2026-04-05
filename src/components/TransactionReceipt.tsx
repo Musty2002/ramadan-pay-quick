@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Share2, X, Phone, Mail, Download } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Share2, X, Phone, Mail, Download } from 'lucide-react';
+import { getEffectiveTransactionStatus, TransactionMetadata } from '@/lib/transactionStatus';
 import { format } from 'date-fns';
 import html2canvas from 'html2canvas';
 import { toast } from 'sonner';
