@@ -7,6 +7,7 @@ import { Transaction, TransactionCategory } from '@/types/database';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { getEffectiveTransactionStatus, getStatusColorClasses, getStatusLabel, TransactionMetadata } from '@/lib/transactionStatus';
+import { TransactionReceipt } from '@/components/TransactionReceipt';
 
 const categoryFilters: { label: string; value: TransactionCategory | 'all' }[] = [
   { label: 'All', value: 'all' },
@@ -23,6 +24,8 @@ export default function History() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<TransactionCategory | 'all'>('all');
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+  const [showReceipt, setShowReceipt] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -123,6 +126,28 @@ export default function History() {
     return groups;
   };
 
+  const handleTxClick = (tx: Transaction) => {
+    // Only show receipt for airtime/data transactions
+    if (['airtime', 'data'].includes(tx.category)) {
+      setSelectedTx(tx);
+      setShowReceipt(true);
+    }
+  };
+
+  const buildReceiptTransaction = (tx: Transaction) => {
+    const metadata = tx.metadata as any;
+    return {
+      id: tx.reference || tx.id,
+      date: new Date(tx.created_at),
+      phoneNumber: metadata?.phone_number || metadata?.mobile_number || 'N/A',
+      network: metadata?.network || tx.category.toUpperCase(),
+      amount: tx.amount,
+      type: tx.category as 'airtime' | 'data',
+      dataPlan: metadata?.plan_name || metadata?.data_plan || undefined,
+      status: tx.status,
+    };
+  };
+
   const groupedTransactions = groupTransactionsByDate(transactions);
 
   return (
@@ -171,7 +196,10 @@ export default function History() {
                   {txs.map((tx) => (
                     <div
                       key={tx.id}
-                      className="bg-card rounded-xl p-4 flex items-center gap-3 shadow-sm"
+                      onClick={() => handleTxClick(tx)}
+                      className={`bg-card rounded-xl p-4 flex items-center gap-3 shadow-sm ${
+                        ['airtime', 'data'].includes(tx.category) ? 'cursor-pointer hover:bg-accent/50 active:scale-[0.99] transition-all' : ''
+                      }`}
                     >
                       <div
                         className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -220,6 +248,18 @@ export default function History() {
           </div>
         )}
       </div>
+
+      {/* Receipt Modal for selected transaction */}
+      {selectedTx && (
+        <TransactionReceipt
+          open={showReceipt}
+          onClose={() => {
+            setShowReceipt(false);
+            setSelectedTx(null);
+          }}
+          transaction={buildReceiptTransaction(selectedTx)}
+        />
+      )}
     </MobileLayout>
   );
 }
