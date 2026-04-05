@@ -143,7 +143,7 @@ export function TransactionReceipt({ open, onClose, transaction }: TransactionRe
    TRANSACTION RECEIPT
 ━━━━━━━━━━━━━━━━━━━━━━
 
-✅ TRANSACTION SUCCESSFUL
+✅ TRANSACTION ${transaction.status === 'failed' ? 'FAILED' : transaction.status === 'pending' ? 'PENDING' : 'SUCCESSFUL'}
 
 📋 Transaction ID: ${transactionId}
 📅 Date & Time: ${format(transaction.date, 'dd MMM yyyy, hh:mm a')}
