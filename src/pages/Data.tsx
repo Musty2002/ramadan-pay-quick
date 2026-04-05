@@ -477,14 +477,12 @@ export default function Data() {
                   {/* Phone Number Input */}
                   <div>
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input
+                    <PhoneInputWithContacts
                       id="phone"
-                      type="tel"
                       placeholder="Enter your phone number"
                       value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      onChange={setPhoneNumber}
                       className="mt-2"
-                      maxLength={11}
                     />
                   </div>
 

@@ -323,12 +323,11 @@ export default function Airtime() {
               {/* Phone Number */}
               <div>
                 <Label htmlFor="phone">Phone Number</Label>
-                <Input
+                <PhoneInputWithContacts
                   id="phone"
-                  type="tel"
                   placeholder="Enter phone number"
                   value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  onChange={setPhoneNumber}
                   className="mt-2"
                 />
               </div>
