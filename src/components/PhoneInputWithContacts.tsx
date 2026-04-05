@@ -50,7 +50,28 @@ export function PhoneInputWithContacts({
     setPicking(true);
 
     try {
-      // Try Contact Picker API (Chrome Android)
+      // Native Capacitor contact picker
+      if (Capacitor.isNativePlatform()) {
+        const permission = await Contacts.requestPermissions();
+        if (permission.contacts === 'granted') {
+          const result = await Contacts.pickContact({
+            projection: { phones: true },
+          });
+          const phone = result?.contact?.phones?.[0]?.number;
+          if (phone) {
+            const normalized = normalizePhoneForInput(phone);
+            onChange(normalized);
+            return;
+          }
+          toast.info('No phone number found for this contact');
+          return;
+        } else {
+          toast.info('Contacts permission denied. Please enable it in settings.');
+          return;
+        }
+      }
+
+      // Web: Try Contact Picker API (Chrome Android)
       if ('contacts' in navigator && 'ContactsManager' in window) {
         const contacts = await (navigator as any).contacts.select(
           ['tel'],
@@ -63,7 +84,7 @@ export function PhoneInputWithContacts({
         }
       }
 
-      // Fallback: try reading from clipboard
+      // Fallback: clipboard
       if (navigator.clipboard?.readText) {
         const text = await navigator.clipboard.readText();
         const digits = text.replace(/\D/g, '');
