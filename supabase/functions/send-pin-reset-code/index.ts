@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
 
     // Send email with verification code
     const emailResponse = await resend.emails.send({
-      from: "SM Data <noreply@resend.dev>",
+      from: "SM Data Sub <no-reply@smdatasub.com.ng>",
       to: [email],
       subject: "Transaction PIN Reset - Verification Code",
       html: `
