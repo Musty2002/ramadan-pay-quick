@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
     const { error: settingsError } = await supabase
       .from("app_settings")
       .upsert({
-        key: `pwd_reset_${user.id}`,
+        key: `pwd_reset_${userId}`,
         value: { code, expires_at: expiresAt.toISOString(), attempts: 0, email: email.toLowerCase().trim() },
         description: "Password reset verification code",
         updated_at: new Date().toISOString()
