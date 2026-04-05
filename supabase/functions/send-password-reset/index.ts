@@ -40,17 +40,22 @@ Deno.serve(async (req) => {
 
     console.log(`Processing password reset for: ${email}`);
 
-    // Check if user exists
-    const { data: users, error: listError } = await supabase.auth.admin.listUsers();
-    const user = users?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase().trim());
+    // Check if user exists via profiles table (much faster than listUsers)
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("user_id")
+      .eq("email", email.toLowerCase().trim())
+      .maybeSingle();
 
-    if (listError || !user) {
+    if (!profile) {
       // Don't reveal if user exists
       return new Response(
         JSON.stringify({ success: true }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    const userId = profile.user_id;
 
     const code = generateCode();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
