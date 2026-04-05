@@ -145,6 +145,7 @@ export default function History() {
       type: tx.category as 'airtime' | 'data',
       dataPlan: metadata?.plan_name || metadata?.data_plan || undefined,
       status: tx.status,
+      metadata: tx.metadata,
     };
   };
 
