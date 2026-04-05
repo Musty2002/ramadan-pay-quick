@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { ArrowLeft, Loader2 } from 'lucide-react';
+import { PhoneInputWithContacts } from '@/components/PhoneInputWithContacts';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -323,12 +324,11 @@ export default function Airtime() {
               {/* Phone Number */}
               <div>
                 <Label htmlFor="phone">Phone Number</Label>
-                <Input
+                <PhoneInputWithContacts
                   id="phone"
-                  type="tel"
                   placeholder="Enter phone number"
                   value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  onChange={setPhoneNumber}
                   className="mt-2"
                 />
               </div>

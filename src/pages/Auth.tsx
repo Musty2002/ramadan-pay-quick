@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ForgotPasswordDialog } from '@/components/auth/ForgotPasswordDialog';
 import { useLoginTracking } from '@/hooks/useLoginTracking';
@@ -88,7 +89,28 @@ export default function Auth() {
 
         // Check if identifier is email or phone
         const isEmail = formData.identifier.includes('@');
-        const loginEmail = isEmail ? formData.identifier : `${formData.identifier}@phone.local`;
+        let loginEmail = formData.identifier;
+        
+        if (!isEmail) {
+          // Look up email by phone number
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('phone', formData.identifier)
+            .maybeSingle();
+          
+          if (profileData?.email) {
+            loginEmail = profileData.email;
+          } else {
+            toast({
+              variant: 'destructive',
+              title: 'Login Failed',
+              description: 'No account found with this phone number.',
+            });
+            setLoading(false);
+            return;
+          }
+        }
         
         const { error, data } = await signIn(loginEmail, formData.password);
         if (error) {

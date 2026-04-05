@@ -40,6 +40,7 @@ interface TransactionReceiptProps {
     amount: number;
     type: 'airtime' | 'data';
     dataPlan?: string;
+    status?: string;
   };
 }
 
