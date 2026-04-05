@@ -1,0 +1,1 @@
+UPDATE wallets SET balance = balance + 500, updated_at = now() WHERE user_id = '83bdd664-718f-4a04-a5d8-2f728f8da0f0';

@@ -177,7 +177,7 @@ ${transaction.type === 'data' && transaction.dataPlan ? `📦 Data Plan: ${trans
     }
   };
 
-  const networkKey = transaction.network.toUpperCase();
+  const networkKey = (transaction.network || '').toString().toUpperCase();
 
   if (!open) return null;
 
