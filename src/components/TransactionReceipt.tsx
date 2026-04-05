@@ -236,16 +236,32 @@ ${transaction.type === 'data' && transaction.dataPlan ? `📦 Data Plan: ${trans
               </div>
             </div>
 
-            {/* Success Banner */}
+            {/* Status Banner */}
             <div className="mx-4 mb-4">
-              <div className="relative bg-gradient-to-r from-green-500 to-emerald-500 text-white py-3 px-4 rounded-xl shadow-md shadow-green-500/20 overflow-hidden">
-                <div className="relative flex items-center justify-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
-                    <CheckCircle className="w-4 h-4" />
+              {(() => {
+                const effectiveStatus = transaction.status 
+                  ? getEffectiveTransactionStatus(transaction.status, transaction.metadata as TransactionMetadata)
+                  : 'completed';
+                const isSuccess = effectiveStatus === 'completed';
+                const isFailed = effectiveStatus === 'failed';
+                const bannerGradient = isSuccess 
+                  ? 'from-green-500 to-emerald-500 shadow-green-500/20' 
+                  : isFailed 
+                    ? 'from-red-500 to-red-600 shadow-red-500/20' 
+                    : 'from-yellow-500 to-amber-500 shadow-yellow-500/20';
+                const StatusIcon = isSuccess ? CheckCircle : isFailed ? XCircle : Clock;
+                const statusText = isSuccess ? 'TRANSACTION SUCCESSFUL' : isFailed ? 'TRANSACTION FAILED' : 'TRANSACTION PENDING';
+                return (
+                  <div className={`relative bg-gradient-to-r ${bannerGradient} text-white py-3 px-4 rounded-xl shadow-md overflow-hidden`}>
+                    <div className="relative flex items-center justify-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+                        <StatusIcon className="w-4 h-4" />
+                      </div>
+                      <span className="font-bold text-sm tracking-wide">{statusText}</span>
+                    </div>
                   </div>
-                  <span className="font-bold text-sm tracking-wide">TRANSACTION SUCCESSFUL</span>
-                </div>
-              </div>
+                );
+              })()}
             </div>
 
             {/* Transaction Details */}
