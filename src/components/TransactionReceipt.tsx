@@ -42,6 +42,7 @@ interface TransactionReceiptProps {
     type: 'airtime' | 'data';
     dataPlan?: string;
     status?: string;
+    metadata?: any;
   };
 }
 
