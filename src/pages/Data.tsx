@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { ArrowLeft, Check, Loader2, ChevronRight } from 'lucide-react';
+import { PhoneInputWithContacts } from '@/components/PhoneInputWithContacts';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
