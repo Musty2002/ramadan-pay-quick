@@ -1,5 +1,5 @@
 // Rate limiting: check if user has made a purchase in the last COOLDOWN_SECONDS
-const COOLDOWN_SECONDS = 60;
+const COOLDOWN_SECONDS = 5;
 
 export async function checkRateLimit(supabase: any, userId: string): Promise<{ allowed: boolean; retryAfter?: number }> {
   const cutoff = new Date(Date.now() - COOLDOWN_SECONDS * 1000).toISOString();
