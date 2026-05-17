@@ -60,13 +60,15 @@ export function ForgotTransactionPinDialog({
         body: { email: email.trim().toLowerCase() }
       });
 
-      if (invokeError) throw invokeError;
-
       if (data?.success) {
         toast.success('Verification code sent to your email');
         setStep('code');
+      } else if (data?.error) {
+        setError(data.error);
+      } else if (invokeError) {
+        throw invokeError;
       } else {
-        setError(data?.error || 'Failed to send verification code');
+        setError('Failed to send verification code');
       }
     } catch (err: any) {
       console.error('Error sending reset code:', err);
@@ -90,13 +92,15 @@ export function ForgotTransactionPinDialog({
         body: { email: email.trim().toLowerCase(), code }
       });
 
-      if (invokeError) throw invokeError;
-
       if (data?.success) {
         toast.success('Code verified');
         setStep('newPin');
+      } else if (data?.error) {
+        setError(data.error);
+      } else if (invokeError) {
+        throw invokeError;
       } else {
-        setError(data?.error || 'Invalid verification code');
+        setError('Invalid verification code');
       }
     } catch (err: any) {
       console.error('Error verifying code:', err);
