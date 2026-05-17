@@ -123,6 +123,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               fetchProfile(session.user.id);
               fetchWallet(session.user.id);
               fetchCashbackWallet(session.user.id);
+              // Auto-provision virtual account whenever the user signs in
+              // (covers fresh signups, email-confirmation logins, and returning users)
+              if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                ensureVirtualAccount(session.user.id);
+              }
             }, 0);
           } else {
             setProfile(null);
@@ -145,6 +150,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           fetchProfile(session.user.id);
           fetchWallet(session.user.id);
           fetchCashbackWallet(session.user.id);
+          // Auto-provision virtual account on app load if missing
+          ensureVirtualAccount(session.user.id);
         }
       } catch (err) {
         console.error('Get session error:', err);
