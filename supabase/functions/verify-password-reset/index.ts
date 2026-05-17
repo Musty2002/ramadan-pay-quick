@@ -20,14 +20,14 @@ Deno.serve(async (req) => {
     if (!email || !code || !newPassword) {
       return new Response(
         JSON.stringify({ error: "Email, code, and new password are required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     if (newPassword.length < 6) {
       return new Response(
         JSON.stringify({ error: "Password must be at least 6 characters" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
     if (!user) {
       return new Response(
         JSON.stringify({ error: "Invalid email or code" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
     if (!settings) {
       return new Response(
         JSON.stringify({ error: "No verification code found. Please request a new one." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
       await supabase.from("app_settings").delete().eq("key", `pwd_reset_${user.id}`);
       return new Response(
         JSON.stringify({ error: "Code has expired. Please request a new one." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
       await supabase.from("app_settings").delete().eq("key", `pwd_reset_${user.id}`);
       return new Response(
         JSON.stringify({ error: "Too many failed attempts. Please request a new code." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
       const remaining = 5 - (storedData.attempts + 1);
       return new Response(
         JSON.stringify({ error: `Invalid code. ${remaining} attempt${remaining !== 1 ? 's' : ''} remaining.` }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
