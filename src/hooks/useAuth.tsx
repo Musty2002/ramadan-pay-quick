@@ -126,7 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               // Auto-provision virtual account whenever the user signs in
               // (covers fresh signups, email-confirmation logins, and returning users)
               if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-                ensureVirtualAccount(session.user.id);
+                ensureVirtualAccount(session.user.id, session.user);
               }
             }, 0);
           } else {
@@ -151,7 +151,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           fetchWallet(session.user.id);
           fetchCashbackWallet(session.user.id);
           // Auto-provision virtual account on app load if missing
-          ensureVirtualAccount(session.user.id);
+          ensureVirtualAccount(session.user.id, session.user);
         }
       } catch (err) {
         console.error('Get session error:', err);
@@ -236,7 +236,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error as Error | null, data: data ? { user: data.user } : null };
   };
 
-  const ensureVirtualAccount = async (userId: string) => {
+  const ensureVirtualAccount = async (userId: string, authenticatedUser?: User) => {
     try {
       const { data: prof } = await supabase
         .from('profiles')
@@ -245,7 +245,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
 
       if (!prof || !prof.virtual_account_name) {
-        const currentUser = session?.user || user;
+        const currentUser = authenticatedUser || session?.user || user;
         const metadata = currentUser?.user_metadata || {};
         console.log(prof ? 'Existing user missing virtual account, creating...' : 'User profile missing, initializing account...');
         createVirtualAccountWithRetry(
@@ -268,7 +268,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Auto-create virtual account for all users who don't have one (including new signups after email verification)
     if (!error && data.user) {
-      ensureVirtualAccount(data.user.id);
+      ensureVirtualAccount(data.user.id, data.user);
     }
     
     return { error: error as Error | null, data: data ? { user: data.user } : null };
