@@ -244,13 +244,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq('user_id', userId)
         .maybeSingle();
 
-      if (prof && !prof.virtual_account_name) {
-        console.log('Existing user missing virtual account, creating...');
+      if (!prof || !prof.virtual_account_name) {
+        const currentUser = session?.user || user;
+        const metadata = currentUser?.user_metadata || {};
+        console.log(prof ? 'Existing user missing virtual account, creating...' : 'User profile missing, initializing account...');
         createVirtualAccountWithRetry(
           userId,
-          prof.email || '',
-          prof.full_name,
-          prof.phone
+          prof?.email || currentUser?.email || '',
+          prof?.full_name || metadata.full_name || 'User',
+          prof?.phone || metadata.phone || ''
         );
       }
     } catch (err) {
