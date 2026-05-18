@@ -31,16 +31,20 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Find user by email
-    const { data: users } = await supabase.auth.admin.listUsers();
-    const user = users?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase().trim());
+    // Find user via profiles (reliable for any number of users)
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("user_id")
+      .eq("email", email.toLowerCase().trim())
+      .maybeSingle();
 
-    if (!user) {
+    if (!profile) {
       return new Response(
         JSON.stringify({ error: "Invalid email or code" }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    const user = { id: profile.user_id };
 
     // Get stored code
     const { data: settings } = await supabase
