@@ -12,6 +12,12 @@ interface CreateVirtualAccountRequest {
   phoneNumber: string;
 }
 
+const jsonResponse = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -57,19 +63,30 @@ Deno.serve(async (req) => {
     // Use service role client for database operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { userId, email, name, phoneNumber: rawPhone }: CreateVirtualAccountRequest = await req.json();
+    const body = await req.json().catch(() => ({})) as Partial<CreateVirtualAccountRequest>;
+    const { userId, email: requestedEmail, name: requestedName, phoneNumber: rawPhone } = body;
+
+    if (!userId) {
+      return jsonResponse({ error: "Missing user ID" }, 400);
+    }
 
     // Verify the request is for the authenticated user
     if (userId !== authenticatedUserId) {
       console.error("User ID mismatch:", userId, authenticatedUserId);
-      return new Response(
-        JSON.stringify({ error: "Forbidden" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "Forbidden" }, 403);
+    }
+
+    const userMetadata = claimsData.user.user_metadata || {};
+    const email = (requestedEmail || claimsData.user.email || "").trim().toLowerCase();
+    const name = (requestedName || userMetadata.full_name || "User").trim();
+    const referralCodeInput = (userMetadata.referral_code || "").trim();
+
+    if (!email) {
+      return jsonResponse({ error: "Missing email address" }, 400);
     }
 
     // Sanitize phone number: strip spaces, dashes, and convert +234 prefix to 0
-    let phoneNumber = (rawPhone || "").replace(/[\s\-()]/g, "");
+    let phoneNumber = (rawPhone || userMetadata.phone || "").replace(/[\s\-()]/g, "");
     if (phoneNumber.startsWith("+234")) {
       phoneNumber = "0" + phoneNumber.slice(4);
     } else if (phoneNumber.startsWith("234") && phoneNumber.length === 13) {
@@ -79,10 +96,92 @@ Deno.serve(async (req) => {
     // Validate: must be exactly 11 digits
     if (!/^\d{11}$/.test(phoneNumber)) {
       console.error("Invalid phone number:", phoneNumber, "from raw:", rawPhone);
-      return new Response(
-        JSON.stringify({ error: "Invalid phone number", details: { status: "fail", message: "Phone number must be 11 digits (e.g. 08012345678)" } }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "Invalid phone number", details: { status: "fail", message: "Phone number must be 11 digits (e.g. 08012345678)" } }, 400);
+    }
+
+    const { data: existingProfile, error: profileLookupError } = await supabase
+      .from("profiles")
+      .select("id, account_number, virtual_account_name, full_name, phone, email")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (profileLookupError) {
+      console.error("Profile lookup failed:", profileLookupError);
+      return jsonResponse({ error: "Failed to check profile", details: profileLookupError }, 500);
+    }
+
+    if (existingProfile?.virtual_account_name && existingProfile?.account_number) {
+      return jsonResponse({
+        success: true,
+        alreadyExists: true,
+        accountNumber: existingProfile.account_number,
+        accountName: existingProfile.virtual_account_name,
+      });
+    }
+
+    let profileId = existingProfile?.id;
+
+    if (!existingProfile) {
+      const [{ data: generatedAccountNumber, error: accountNumberError }, { data: generatedReferralCode, error: referralCodeError }] = await Promise.all([
+        supabase.rpc("generate_account_number"),
+        supabase.rpc("generate_referral_code"),
+      ]);
+
+      if (accountNumberError || referralCodeError || !generatedAccountNumber || !generatedReferralCode) {
+        console.error("Failed to generate profile codes:", accountNumberError || referralCodeError);
+        return jsonResponse({ error: "Failed to initialize account profile" }, 500);
+      }
+
+      let referredBy: string | null = null;
+      if (referralCodeInput) {
+        const { data: referrer } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("referral_code", referralCodeInput)
+          .maybeSingle();
+        referredBy = referrer?.id || null;
+      }
+
+      const { data: newProfile, error: insertProfileError } = await supabase
+        .from("profiles")
+        .insert({
+          user_id: userId,
+          full_name: name,
+          phone: phoneNumber,
+          email,
+          account_number: generatedAccountNumber,
+          referral_code: generatedReferralCode,
+          referred_by: referredBy,
+        })
+        .select("id")
+        .single();
+
+      if (insertProfileError || !newProfile) {
+        console.error("Failed to create missing profile:", insertProfileError);
+        return jsonResponse({ error: "Failed to initialize account profile", details: insertProfileError }, 500);
+      }
+
+      profileId = newProfile.id;
+
+      if (referredBy) {
+        await supabase.from("referrals").insert({ referrer_id: referredBy, referee_id: profileId });
+      }
+    }
+
+    const [{ data: wallet }, { data: cashbackWallet }, { data: userRole }] = await Promise.all([
+      supabase.from("wallets").select("id").eq("user_id", userId).maybeSingle(),
+      supabase.from("cashback_wallets").select("id").eq("user_id", userId).maybeSingle(),
+      supabase.from("user_roles").select("id").eq("user_id", userId).eq("role", "user").maybeSingle(),
+    ]);
+
+    if (!wallet) {
+      await supabase.from("wallets").insert({ user_id: userId, balance: 0 });
+    }
+    if (!cashbackWallet) {
+      await supabase.from("cashback_wallets").insert({ user_id: userId, balance: 0 });
+    }
+    if (!userRole) {
+      await supabase.from("user_roles").insert({ user_id: userId, role: "user" });
     }
 
     console.log(`Creating virtual account for user: ${userId}, email: ${email}, phone: ${phoneNumber}`);
