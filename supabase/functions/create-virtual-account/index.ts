@@ -187,12 +187,12 @@ Deno.serve(async (req) => {
 
     console.log(`Creating virtual account for user: ${userId}, email: ${email}, phone: ${phoneNumber}`);
 
-    // Try multiple bank codes; PaymentPoint sometimes fails on specific banks
-    // 20946=PalmPay, 120001=9PSB, 50515=Moniepoint, 100033=Palmpay alt
+    // Try multiple supported partner bank codes; PaymentPoint rejects unsupported codes with a non-2xx flow.
+    // 20867=PalmPay, 20987=Kolomoni MFB, 29007=Safehaven
     const bankCodesToTry = [
-      ["20946", "120001", "50515"], // all at once
-      ["120001"], // fallback 9PSB
-      ["50515"], // fallback Moniepoint
+      ["20867"],
+      ["20987"],
+      ["29007"],
     ];
 
     let paymentPointData: any = null;
