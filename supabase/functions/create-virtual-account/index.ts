@@ -78,7 +78,8 @@ Deno.serve(async (req) => {
 
     const userMetadata = claimsData.user.user_metadata || {};
     const email = (requestedEmail || claimsData.user.email || "").trim().toLowerCase();
-    const name = (requestedName || userMetadata.full_name || "User").trim();
+    const metadataName = (userMetadata.full_name || "").trim();
+    const name = ((requestedName && requestedName !== "User" ? requestedName : metadataName) || "User").trim();
     const referralCodeInput = (userMetadata.referral_code || "").trim();
 
     if (!email) {
