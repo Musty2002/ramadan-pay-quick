@@ -87,40 +87,46 @@ Deno.serve(async (req) => {
 
     console.log(`Creating virtual account for user: ${userId}, email: ${email}, phone: ${phoneNumber}`);
 
-    // Call PaymentPoint API to create virtual account
-    const paymentPointResponse = await fetch("https://api.paymentpoint.co/api/v1/createVirtualAccount", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${paymentPointApiSecret}`,
-        "Content-Type": "application/json",
-        "api-key": paymentPointApiKey,
-      },
-      body: JSON.stringify({
-        email: email,
-        name: name,
-        phoneNumber: phoneNumber,
-        bankCode: ["20946"], // PalmPay
-        businessId: paymentPointBusinessId,
-      }),
-    });
+    // Try multiple bank codes; PaymentPoint sometimes fails on specific banks
+    // 20946=PalmPay, 120001=9PSB, 50515=Moniepoint, 100033=Palmpay alt
+    const bankCodesToTry = [
+      ["20946", "120001", "50515"], // all at once
+      ["120001"], // fallback 9PSB
+      ["50515"], // fallback Moniepoint
+    ];
 
-    const paymentPointData = await paymentPointResponse.json();
-    console.log("PaymentPoint response:", JSON.stringify(paymentPointData));
+    let paymentPointData: any = null;
+    let bankAccount: any = null;
 
-    if (paymentPointData.status !== "success") {
-      console.error("PaymentPoint error:", paymentPointData);
-      return new Response(
-        JSON.stringify({ error: "Failed to create virtual account", details: paymentPointData }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    for (const bankCode of bankCodesToTry) {
+      const resp = await fetch("https://api.paymentpoint.co/api/v1/createVirtualAccount", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${paymentPointApiSecret}`,
+          "Content-Type": "application/json",
+          "api-key": paymentPointApiKey,
+        },
+        body: JSON.stringify({
+          email,
+          name,
+          phoneNumber,
+          bankCode,
+          businessId: paymentPointBusinessId,
+        }),
+      });
+      paymentPointData = await resp.json();
+      console.log(`PaymentPoint response for [${bankCode.join(",")}]:`, JSON.stringify(paymentPointData));
+
+      if (paymentPointData?.status === "success" && paymentPointData.bankAccounts?.length > 0) {
+        bankAccount = paymentPointData.bankAccounts[0];
+        break;
+      }
     }
 
-    // Get the first bank account from the response
-    const bankAccount = paymentPointData.bankAccounts?.[0];
     if (!bankAccount) {
-      console.error("No bank account in response");
+      console.error("All bank code attempts failed");
       return new Response(
-        JSON.stringify({ error: "No bank account returned from PaymentPoint" }),
+        JSON.stringify({ error: "Failed to create virtual account", details: paymentPointData }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
