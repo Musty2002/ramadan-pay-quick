@@ -462,11 +462,27 @@ Deno.serve(async (req) => {
         });
       }
       if (serviceType === 'airtime') {
-        const result = await getAirtimeServices();
-        const transformed = transformISquareAirtimeServices(result);
-        return new Response(JSON.stringify({ success: true, data: transformed }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        try {
+          const result = await getAirtimeServices();
+          const transformed = transformISquareAirtimeServices(result);
+          if (transformed.length > 0) {
+            return new Response(JSON.stringify({ success: true, data: transformed }), {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+          throw new Error('No airtime services returned');
+        } catch (err) {
+          console.error('iSquare airtime services failed, using fallback list:', err);
+          const fallback = [
+            { id: 1, product_id: 1, service: 'Airtime', name: 'MTN', category: 'MTN', available: true, provider: 'isquare' },
+            { id: 2, product_id: 2, service: 'Airtime', name: 'AIRTEL', category: 'AIRTEL', available: true, provider: 'isquare' },
+            { id: 3, product_id: 3, service: 'Airtime', name: 'GLO', category: 'GLO', available: true, provider: 'isquare' },
+            { id: 4, product_id: 4, service: 'Airtime', name: '9MOBILE', category: '9MOBILE', available: true, provider: 'isquare' },
+          ];
+          return new Response(JSON.stringify({ success: true, data: fallback }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
       }
       throw new Error('Unsupported service type for iSquare');
     }
