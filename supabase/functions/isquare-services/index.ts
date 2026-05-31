@@ -26,7 +26,7 @@ async function makeISquareRequest(endpoint: string, method: 'GET' | 'POST' = 'GE
   const password = Deno.env.get('ISQUARE_PASSWORD');
   
   if (!username || !password) {
-    throw new Error('iSquare API credentials not configured');
+    throw new Error('Service temporarily unavailable: provider credentials are not configured. Please contact support.');
   }
 
   const credentials = btoa(`${username}:${password}`);
@@ -52,6 +52,19 @@ async function makeISquareRequest(endpoint: string, method: 'GET' | 'POST' = 'GE
   console.log(`iSquare response data:`, JSON.stringify(data));
   
   if (!response.ok) {
+    // Detect invalid credentials early and surface a clear message
+    const rawText = JSON.stringify(data).toLowerCase();
+    if (
+      response.status === 401 ||
+      response.status === 403 ||
+      rawText.includes('invalid username') ||
+      rawText.includes('invalid credentials') ||
+      rawText.includes('authentication failed') ||
+      rawText.includes('unauthorized')
+    ) {
+      throw new Error('Service temporarily unavailable: provider authentication failed. Please contact support.');
+    }
+
     // Parse specific error messages from iSquare
     let errorMessage = 'iSquare API request failed';
     
