@@ -9,6 +9,10 @@ const corsHeaders = {
 
 const ISQUARE_BASE_URL = 'https://isquaredata.com/api';
 
+function cleanSecret(value: string | undefined | null): string {
+  return (value || '').trim().replace(/^['"]|['"]$/g, '').trim();
+}
+
 interface ServiceRequest {
   action: 'get-services' | 'purchase';
   serviceType: 'data' | 'airtime';
@@ -22,8 +26,8 @@ interface ServiceRequest {
 }
 
 async function makeISquareRequest(endpoint: string, method: 'GET' | 'POST' = 'GET', body?: object) {
-  const username = Deno.env.get('ISQUARE_USERNAME');
-  const password = Deno.env.get('ISQUARE_PASSWORD');
+  const username = cleanSecret(Deno.env.get('ISQUARE_USERNAME'));
+  const password = cleanSecret(Deno.env.get('ISQUARE_PASSWORD'));
   
   if (!username || !password) {
     throw new Error('Service temporarily unavailable: provider credentials are not configured. Please contact support.');
@@ -122,6 +126,7 @@ async function purchaseAirtime(networkId: number, phoneNumber: string, amount: n
     phone_number: phoneNumber,
     amount: amount,
     reference,
+    disable_validation: false,
   });
 }
 
