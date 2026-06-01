@@ -54,12 +54,18 @@ async function makeRGCRequest(endpoint: string, method: 'GET' | 'POST' = 'GET', 
   console.log(`Making RGC request to: ${RGC_BASE_URL}${endpoint}`);
   
   const response = await fetch(`${RGC_BASE_URL}${endpoint}`, options);
-  const data = await response.json();
+  const responseText = await response.text();
+  let data: any;
+  try {
+    data = responseText ? JSON.parse(responseText) : {};
+  } catch (_) {
+    data = { message: responseText || 'RGC API returned an invalid response' };
+  }
   
   console.log(`RGC response status: ${response.status}`);
   console.log(`RGC response data:`, JSON.stringify(data));
   
-  if (!response.ok && !data.success) {
+  if (!response.ok || data.success === false || data.status === false) {
     throw new Error(data.message || 'RGC API request failed');
   }
   
@@ -81,8 +87,7 @@ async function validateElectricity(meterNumber: string, discoid: number, meterTy
   return await makeRGCRequest(endpoint);
 }
 
-// Map network category name to RGC network code
-// Based on RGC API: MTN=1, AIRTEL=2, GLO=3, 9MOBILE=4
+// Map network category name to RGC network code when live service product_id is unavailable.
 function getNetworkCode(category: string): number {
   const normalized = category.trim().toUpperCase();
 
@@ -108,7 +113,7 @@ function getNetworkCode(category: string): number {
 }
 
 async function purchaseAirtime(networkCategory: string, amount: number, mobileNumber: string, networkId?: number) {
-  // Use product_id from services list if available, otherwise fall back to hardcoded mapping
+  // Use product_id from services list if available, otherwise fall back to hardcoded mapping.
   const networkCode = networkId || getNetworkCode(networkCategory);
   console.log(`Airtime purchase: category=${networkCategory.toUpperCase()}, networkCode=${networkCode}, networkId=${networkId}, amount=${amount}, mobile=${mobileNumber}`);
   
@@ -513,7 +518,7 @@ Deno.serve(async (req) => {
             throw new Error('Missing required fields for airtime purchase');
           }
 
-          // network is the category name (e.g. "MTN"), mapped to code in purchaseAirtime
+          // network is the category name (e.g. "MTN"); network_id is the live RGC product_id from the services list.
           const networkCategory = String(body.network);
 
           amount = body.amount;
@@ -528,7 +533,7 @@ Deno.serve(async (req) => {
             });
           }
 
-          result = await purchaseAirtime(networkCategory, body.amount, body.mobile_number);
+          result = await purchaseAirtime(networkCategory, body.amount, body.mobile_number, body.network_id);
           
           // Determine status - RGC typically returns success if the API doesn't throw
           const isSuccessful = result.success !== false && !result.error;
