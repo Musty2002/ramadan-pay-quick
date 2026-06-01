@@ -113,14 +113,27 @@ export default function Airtime() {
 
   const fetchNetworks = async () => {
     try {
-      const isquareResponse = await supabase.functions.invoke('isquare-services', {
-        body: { action: 'get-services', serviceType: 'airtime' }
-      });
+      const [isquareResponse, rgcResponse] = await Promise.all([
+        supabase.functions.invoke('isquare-services', {
+          body: { action: 'get-services', serviceType: 'airtime' }
+        }),
+        supabase.functions.invoke('rgc-services', {
+          body: { action: 'get-services', serviceType: 'airtime' }
+        }),
+      ]);
 
       let allNetworks: AirtimeService[] = [];
       if (isquareResponse.data?.success && isquareResponse.data?.data) {
         const isquareNetworks = isquareResponse.data.data.map((n: AirtimeService) => ({ ...n, provider: 'isquare' as const }));
         allNetworks = [...allNetworks, ...isquareNetworks];
+      }
+      if (rgcResponse.data?.success && Array.isArray(rgcResponse.data?.data)) {
+        const rgcNetworks = (rgcResponse.data.data as AirtimeService[]).map((n) => ({ ...n, provider: 'rgc' as const }));
+        // Only add categories not already present from iSquare
+        const existingCats = new Set(allNetworks.map((n) => n.category));
+        for (const n of rgcNetworks) {
+          if (!existingCats.has(n.category)) allNetworks.push(n);
+        }
       }
       setNetworks(allNetworks);
     } catch (error: any) {
@@ -184,22 +197,55 @@ export default function Airtime() {
     const normalizedPhone = normalizePhoneNumber(phoneNumber);
     
     try {
-      const { data, error } = await supabase.functions.invoke('isquare-services', {
-        body: {
-          action: 'purchase',
-          serviceType: 'airtime',
-          network: selectedNetwork.product_id,
-          amount: purchaseAmount,
-          phone_number: normalizedPhone,
-        }
-      });
+      const callProvider = async (provider: 'isquare' | 'rgc') => {
+        const body = provider === 'rgc'
+          ? {
+              action: 'purchase',
+              serviceType: 'airtime',
+              network: selectedNetwork.category, // RGC expects category name (MTN/AIRTEL/GLO/9MOBILE)
+              amount: purchaseAmount,
+              mobile_number: normalizedPhone,
+            }
+          : {
+              action: 'purchase',
+              serviceType: 'airtime',
+              network: selectedNetwork.product_id,
+              amount: purchaseAmount,
+              phone_number: normalizedPhone,
+            };
+        return supabase.functions.invoke(
+          provider === 'rgc' ? 'rgc-services' : 'isquare-services',
+          { body }
+        );
+      };
 
-      if (error) {
-        const message = await getEdgeFunctionErrorMessage(error);
-        throw new Error(message || 'Purchase failed');
-      }
-      if (!data?.success) {
-        throw new Error(data?.message || 'Purchase failed');
+      const primary = selectedNetwork.provider === 'rgc' ? 'rgc' : 'isquare';
+      const fallback = primary === 'rgc' ? 'isquare' : 'rgc';
+
+      let { data, error } = await callProvider(primary);
+      let message: string | undefined;
+      if (error) message = await getEdgeFunctionErrorMessage(error);
+      const primaryFailed = !!error || !data?.success;
+      const isUserError = (message || data?.message || '').toLowerCase();
+      const isFatalUserError =
+        isUserError.includes('insufficient balance') ||
+        isUserError.includes('invalid phone') ||
+        isUserError.includes('authentication required') ||
+        isUserError.includes('please wait');
+
+      if (primaryFailed && !isFatalUserError) {
+        // Auto-fallback to the other provider (e.g. iSquare auth failure → RGC)
+        const retry = await callProvider(fallback);
+        if (retry.error) {
+          const retryMessage = await getEdgeFunctionErrorMessage(retry.error);
+          throw new Error(retryMessage || message || 'Purchase failed');
+        }
+        if (!retry.data?.success) {
+          throw new Error(retry.data?.message || message || 'Purchase failed');
+        }
+        data = retry.data;
+      } else if (primaryFailed) {
+        throw new Error(message || data?.message || 'Purchase failed');
       }
 
       setLastTransaction({
