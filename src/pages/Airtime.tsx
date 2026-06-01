@@ -220,32 +220,18 @@ export default function Airtime() {
         );
       };
 
-      const primary = 'rgc';
-      const fallback = 'isquare';
-
-      let { data, error } = await callProvider(primary);
+      let { data, error } = await callProvider('rgc');
       let message: string | undefined;
       if (error) message = await getEdgeFunctionErrorMessage(error);
       const primaryFailed = !!error || !data?.success;
       const isUserError = (message || data?.message || '').toLowerCase();
-      const isFatalUserError =
+      const isExpectedUserError =
         isUserError.includes('insufficient balance') ||
         isUserError.includes('invalid phone') ||
         isUserError.includes('authentication required') ||
         isUserError.includes('please wait');
 
-      if (primaryFailed && !isFatalUserError) {
-        // Auto-fallback to the other provider (e.g. iSquare auth failure → RGC)
-        const retry = await callProvider(fallback);
-        if (retry.error) {
-          const retryMessage = await getEdgeFunctionErrorMessage(retry.error);
-          throw new Error(retryMessage || message || 'Purchase failed');
-        }
-        if (!retry.data?.success) {
-          throw new Error(retry.data?.message || message || 'Purchase failed');
-        }
-        data = retry.data;
-      } else if (primaryFailed) {
+      if (primaryFailed) {
         throw new Error(message || data?.message || 'Purchase failed');
       }
 
