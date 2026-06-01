@@ -123,15 +123,15 @@ export default function Airtime() {
       ]);
 
       let allNetworks: AirtimeService[] = [];
-      if (isquareResponse.data?.success && isquareResponse.data?.data) {
-        const isquareNetworks = isquareResponse.data.data.map((n: AirtimeService) => ({ ...n, provider: 'isquare' as const }));
-        allNetworks = [...allNetworks, ...isquareNetworks];
-      }
       if (rgcResponse.data?.success && Array.isArray(rgcResponse.data?.data)) {
         const rgcNetworks = (rgcResponse.data.data as AirtimeService[]).map((n) => ({ ...n, provider: 'rgc' as const }));
-        // Only add categories not already present from iSquare
+        allNetworks = [...allNetworks, ...rgcNetworks];
+      }
+      if (isquareResponse.data?.success && isquareResponse.data?.data) {
+        const isquareNetworks = isquareResponse.data.data.map((n: AirtimeService) => ({ ...n, provider: 'isquare' as const }));
+        // RGC is the primary airtime provider; only keep iSquare for missing categories.
         const existingCats = new Set(allNetworks.map((n) => n.category));
-        for (const n of rgcNetworks) {
+        for (const n of isquareNetworks) {
           if (!existingCats.has(n.category)) allNetworks.push(n);
         }
       }
@@ -203,6 +203,7 @@ export default function Airtime() {
               action: 'purchase',
               serviceType: 'airtime',
               network: selectedNetwork.category, // RGC expects category name (MTN/AIRTEL/GLO/9MOBILE)
+              network_id: selectedNetwork.product_id,
               amount: purchaseAmount,
               mobile_number: normalizedPhone,
             }
@@ -219,8 +220,8 @@ export default function Airtime() {
         );
       };
 
-      const primary = selectedNetwork.provider === 'rgc' ? 'rgc' : 'isquare';
-      const fallback = primary === 'rgc' ? 'isquare' : 'rgc';
+      const primary = 'rgc';
+      const fallback = 'isquare';
 
       let { data, error } = await callProvider(primary);
       let message: string | undefined;
