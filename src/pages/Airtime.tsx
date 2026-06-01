@@ -224,13 +224,6 @@ export default function Airtime() {
       let message: string | undefined;
       if (error) message = await getEdgeFunctionErrorMessage(error);
       const primaryFailed = !!error || !data?.success;
-      const isUserError = (message || data?.message || '').toLowerCase();
-      const isExpectedUserError =
-        isUserError.includes('insufficient balance') ||
-        isUserError.includes('invalid phone') ||
-        isUserError.includes('authentication required') ||
-        isUserError.includes('please wait');
-
       if (primaryFailed) {
         throw new Error(message || data?.message || 'Purchase failed');
       }
