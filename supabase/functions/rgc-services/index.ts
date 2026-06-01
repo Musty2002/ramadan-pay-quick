@@ -518,7 +518,7 @@ Deno.serve(async (req) => {
             throw new Error('Missing required fields for airtime purchase');
           }
 
-          // network is the category name (e.g. "MTN"), mapped to code in purchaseAirtime
+          // network is the category name (e.g. "MTN"); network_id is the live RGC product_id from the services list.
           const networkCategory = String(body.network);
 
           amount = body.amount;
@@ -533,7 +533,7 @@ Deno.serve(async (req) => {
             });
           }
 
-          result = await purchaseAirtime(networkCategory, body.amount, body.mobile_number);
+          result = await purchaseAirtime(networkCategory, body.amount, body.mobile_number, body.network_id);
           
           // Determine status - RGC typically returns success if the API doesn't throw
           const isSuccessful = result.success !== false && !result.error;
