@@ -113,14 +113,27 @@ export default function Airtime() {
 
   const fetchNetworks = async () => {
     try {
-      const isquareResponse = await supabase.functions.invoke('isquare-services', {
-        body: { action: 'get-services', serviceType: 'airtime' }
-      });
+      const [isquareResponse, rgcResponse] = await Promise.all([
+        supabase.functions.invoke('isquare-services', {
+          body: { action: 'get-services', serviceType: 'airtime' }
+        }),
+        supabase.functions.invoke('rgc-services', {
+          body: { action: 'get-services', serviceType: 'airtime' }
+        }),
+      ]);
 
       let allNetworks: AirtimeService[] = [];
       if (isquareResponse.data?.success && isquareResponse.data?.data) {
         const isquareNetworks = isquareResponse.data.data.map((n: AirtimeService) => ({ ...n, provider: 'isquare' as const }));
         allNetworks = [...allNetworks, ...isquareNetworks];
+      }
+      if (rgcResponse.data?.success && Array.isArray(rgcResponse.data?.data)) {
+        const rgcNetworks = (rgcResponse.data.data as AirtimeService[]).map((n) => ({ ...n, provider: 'rgc' as const }));
+        // Only add categories not already present from iSquare
+        const existingCats = new Set(allNetworks.map((n) => n.category));
+        for (const n of rgcNetworks) {
+          if (!existingCats.has(n.category)) allNetworks.push(n);
+        }
       }
       setNetworks(allNetworks);
     } catch (error: any) {
@@ -184,15 +197,27 @@ export default function Airtime() {
     const normalizedPhone = normalizePhoneNumber(phoneNumber);
     
     try {
-      const { data, error } = await supabase.functions.invoke('isquare-services', {
-        body: {
-          action: 'purchase',
-          serviceType: 'airtime',
-          network: selectedNetwork.product_id,
-          amount: purchaseAmount,
-          phone_number: normalizedPhone,
+      const useRgc = selectedNetwork.provider === 'rgc';
+      const { data, error } = await supabase.functions.invoke(
+        useRgc ? 'rgc-services' : 'isquare-services',
+        {
+          body: useRgc
+            ? {
+                action: 'purchase',
+                serviceType: 'airtime',
+                network: selectedNetwork.category, // RGC expects category name (MTN/AIRTEL/GLO/9MOBILE)
+                amount: purchaseAmount,
+                mobile_number: normalizedPhone,
+              }
+            : {
+                action: 'purchase',
+                serviceType: 'airtime',
+                network: selectedNetwork.product_id,
+                amount: purchaseAmount,
+                phone_number: normalizedPhone,
+              },
         }
-      });
+      );
 
       if (error) {
         const message = await getEdgeFunctionErrorMessage(error);
