@@ -79,27 +79,28 @@ Deno.serve(async (req) => {
     const lastName = nameParts.slice(1).join(" ") || firstName;
     const webhookUrl = `${supabaseUrl}/functions/v1/aspfiy-webhook`;
 
-    const resp = await fetch("https://api-v1.aspfiy.com/reserve-palmpay/", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${aspfiyKey}`,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        email,
-        reference: targetUserId,
-        firstName,
-        lastName,
-        webhookUrl,
-        phone,
-      }),
-    });
-    const txt = await resp.text();
+    const headers = {
+      Authorization: `Bearer ${aspfiyKey}`,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+    const payload = JSON.stringify({ email, reference: targetUserId, firstName, lastName, webhookUrl, phone });
+
+    let resp = await fetch("https://api-v1.aspfiy.com/reserve-palmpay/", { method: "POST", headers, body: payload });
+    let txt = await resp.text();
     let data: any = {};
     try { data = JSON.parse(txt); } catch {}
+    let bankName = "PalmPay";
 
-    if (!resp.ok) {
+    if (!resp.ok || data?.status === false) {
+      console.log("PalmPay failed, falling back to Paga:", txt);
+      resp = await fetch("https://api-v1.aspfiy.com/reserve-paga/", { method: "POST", headers, body: payload });
+      txt = await resp.text();
+      try { data = JSON.parse(txt); } catch {}
+      bankName = "Paga";
+    }
+
+    if (!resp.ok || data?.status === false) {
       return json({ error: "Aspfiy rejected request", details: data || txt }, 400);
     }
 
@@ -113,7 +114,7 @@ Deno.serve(async (req) => {
 
     const { error: upErr } = await supabase
       .from("profiles")
-      .update({ account_number: accountNumber, virtual_account_name: accountName, virtual_account_bank: "PalmPay" })
+      .update({ account_number: accountNumber, virtual_account_name: accountName, virtual_account_bank: bankName })
       .eq("user_id", targetUserId);
     if (upErr) return json({ error: "Failed to save account", details: upErr.message }, 500);
 
