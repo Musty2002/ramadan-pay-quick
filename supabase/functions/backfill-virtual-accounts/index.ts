@@ -15,6 +15,8 @@ function sanitizePhone(raw: string): string {
   let p = (raw || "").replace(/[\s\-()]/g, "");
   if (p.startsWith("+234")) p = "0" + p.slice(4);
   else if (p.startsWith("234") && p.length === 13) p = "0" + p.slice(3);
+  // 10-digit local mobile without the leading 0 (e.g. 8131320548)
+  if (p.length === 10 && /^[789]/.test(p)) p = "0" + p;
   return p;
 }
 
