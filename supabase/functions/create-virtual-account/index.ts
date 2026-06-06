@@ -248,6 +248,7 @@ Deno.serve(async (req) => {
       .update({
         account_number: accountNumber,
         virtual_account_name: accountName,
+        virtual_account_bank: bankName,
       })
       .eq("user_id", userId);
 
