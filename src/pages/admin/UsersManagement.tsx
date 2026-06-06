@@ -32,7 +32,8 @@ import {
   UserCheck,
   Smartphone,
   Monitor,
-  History
+  History,
+  Phone
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -86,6 +87,10 @@ export default function UsersManagement() {
   const [sessionsDialogOpen, setSessionsDialogOpen] = useState(false);
   const [loginSessions, setLoginSessions] = useState<LoginSession[]>([]);
   const [sessionsLoading, setSessionsLoading] = useState(false);
+
+  // Fix phone / provision account state
+  const [phoneDialogOpen, setPhoneDialogOpen] = useState(false);
+  const [newPhone, setNewPhone] = useState('');
 
   useEffect(() => {
     fetchUsers();
@@ -266,6 +271,33 @@ export default function UsersManagement() {
     }
   };
 
+  const handleFixPhoneAndProvision = async () => {
+    if (!selectedUser) return;
+    const trimmed = newPhone.trim();
+    if (!trimmed) {
+      toast.error('Enter a phone number');
+      return;
+    }
+    setProcessing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-fix-user-account', {
+        body: { userId: selectedUser.user_id, phone: trimmed },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+
+      toast.success(`Account provisioned: ${(data as any).accountNumber}`);
+      setPhoneDialogOpen(false);
+      setNewPhone('');
+      fetchUsers();
+    } catch (e: any) {
+      console.error('Fix phone error:', e);
+      toast.error(e?.message || 'Failed to provision account');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   const filteredUsers = users.filter(user => 
     user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -393,6 +425,14 @@ export default function UsersManagement() {
                             }}>
                               <History className="w-4 h-4 mr-2" />
                               View Login Sessions
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                              setSelectedUser(user);
+                              setNewPhone(user.phone || '');
+                              setPhoneDialogOpen(true);
+                            }}>
+                              <Phone className="w-4 h-4 mr-2" />
+                              Fix Phone & Provision Account
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => toggleAdminRole(user)}>
                               <UserCog className="w-4 h-4 mr-2" />
