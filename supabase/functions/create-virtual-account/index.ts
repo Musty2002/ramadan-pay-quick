@@ -28,9 +28,7 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const paymentPointApiSecret = Deno.env.get("PAYMENTPOINT_API_SECRET")!;
-    const paymentPointApiKey = Deno.env.get("PAYMENTPOINT_API_KEY")!;
-    const paymentPointBusinessId = Deno.env.get("PAYMENTPOINT_BUSINESS_ID")!;
+    const aspfiySecretKey = Deno.env.get("ASPFIY_SECRET_KEY")!;
 
     // Validate JWT
     const authHeader = req.headers.get("Authorization");
@@ -187,53 +185,69 @@ Deno.serve(async (req) => {
 
     console.log(`Creating virtual account for user: ${userId}, email: ${email}, phone: ${phoneNumber}`);
 
-    // Only generate Kolomoni MFB virtual accounts (20987).
-    const bankCodesToTry = [
-      ["20987"],
-    ];
+    // Split full name into first/last for Aspfiy
+    const nameParts = name.trim().split(/\s+/);
+    const firstName = nameParts[0] || "User";
+    const lastName = nameParts.slice(1).join(" ") || firstName;
 
-    let paymentPointData: any = null;
-    let bankAccount: any = null;
+    // Use the user id as the unique merchant reference
+    const reference = userId;
+    const webhookUrl = `${supabaseUrl}/functions/v1/aspfiy-webhook`;
 
-    for (const bankCode of bankCodesToTry) {
-      const resp = await fetch("https://api.paymentpoint.co/api/v1/createVirtualAccount", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${paymentPointApiSecret}`,
-          "Content-Type": "application/json",
-          "api-key": paymentPointApiKey,
-        },
-        body: JSON.stringify({
-          email,
-          name,
-          phoneNumber,
-          bankCode,
-          businessId: paymentPointBusinessId,
-        }),
+    const aspfiyResp = await fetch("https://api-v1.aspfiy.com/reserve-paga/", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${aspfiySecretKey}`,
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        reference,
+        firstName,
+        lastName,
+        webhookUrl,
+        phone: phoneNumber,
+      }),
+    });
+
+    const rawText = await aspfiyResp.text();
+    let aspfiyData: any = {};
+    try { aspfiyData = JSON.parse(rawText); } catch { /* keep raw */ }
+    console.log(`Aspfiy reserve-paga status=${aspfiyResp.status}, body=`, rawText);
+
+    if (!aspfiyResp.ok) {
+      return jsonResponse({ error: "Failed to create virtual account", details: aspfiyData || rawText }, 400);
+    }
+
+    // Parse account info from any of the common response shapes
+    const acct =
+      aspfiyData?.data?.account ||
+      aspfiyData?.data ||
+      aspfiyData?.account ||
+      aspfiyData ||
+      {};
+
+    const accountNumber =
+      acct.account_number || acct.accountNumber || acct.accountNo || null;
+    const accountName =
+      acct.account_name || acct.accountName || `${firstName} ${lastName}`.trim();
+    const bankName = acct.bank_name || acct.bankName || "Paga";
+
+    if (!accountNumber) {
+      console.warn("Aspfiy did not return an account number in the response. Awaiting webhook.");
+      return jsonResponse({
+        success: true,
+        pending: true,
+        message: "Account reservation in progress. It will be available shortly.",
       });
-      paymentPointData = await resp.json();
-      console.log(`PaymentPoint response for [${bankCode.join(",")}]:`, JSON.stringify(paymentPointData));
-
-      if (paymentPointData?.status === "success" && paymentPointData.bankAccounts?.length > 0) {
-        bankAccount = paymentPointData.bankAccounts[0];
-        break;
-      }
     }
 
-    if (!bankAccount) {
-      console.error("All bank code attempts failed");
-      return new Response(
-        JSON.stringify({ error: "Failed to create virtual account", details: paymentPointData }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Update the user's profile with the virtual account number and name
     const { error: updateError } = await supabase
       .from("profiles")
-      .update({ 
-        account_number: bankAccount.accountNumber,
-        virtual_account_name: bankAccount.accountName,
+      .update({
+        account_number: accountNumber,
+        virtual_account_name: accountName,
       })
       .eq("user_id", userId);
 
@@ -245,18 +259,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Successfully created virtual account: ${bankAccount.accountNumber} for user: ${userId}`);
+    console.log(`Successfully created Aspfiy virtual account: ${accountNumber} for user: ${userId}`);
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        accountNumber: bankAccount.accountNumber,
-        bankName: bankAccount.bankName,
-        accountName: bankAccount.accountName,
-        customerId: paymentPointData.customer?.customer_id,
-      }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonResponse({
+      success: true,
+      accountNumber,
+      bankName,
+      accountName,
+    });
 
   } catch (error: unknown) {
     console.error("Error creating virtual account:", error);
