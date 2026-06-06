@@ -214,7 +214,7 @@ Deno.serve(async (req) => {
     const rawText = await aspfiyResp.text();
     let aspfiyData: any = {};
     try { aspfiyData = JSON.parse(rawText); } catch { /* keep raw */ }
-    console.log(`Aspfiy reserve-paga status=${aspfiyResp.status}, body=`, rawText);
+    console.log(`Aspfiy reserve-palmpay status=${aspfiyResp.status}, body=`, rawText);
 
     if (!aspfiyResp.ok) {
       return jsonResponse({ error: "Failed to create virtual account", details: aspfiyData || rawText }, 400);
