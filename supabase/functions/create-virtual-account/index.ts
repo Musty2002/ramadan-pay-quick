@@ -194,28 +194,19 @@ Deno.serve(async (req) => {
     const reference = userId;
     const webhookUrl = `${supabaseUrl}/functions/v1/aspfiy-webhook`;
 
-    const reservePayload = JSON.stringify({ email, reference, firstName, lastName, webhookUrl, phone: phoneNumber });
-    const reserveHeaders = {
-      "Authorization": `Bearer ${aspfiySecretKey}`,
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-    };
-
-    // Try PalmPay first, then fall back to Paga if the provider can't reserve a PalmPay account
-    let aspfiyResp = await fetch("https://api-v1.aspfiy.com/reserve-palmpay/", { method: "POST", headers: reserveHeaders, body: reservePayload });
-    let rawText = await aspfiyResp.text();
+    const aspfiyResp = await fetch("https://api-v1.aspfiy.com/reserve-paga/", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${aspfiySecretKey}`,
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify({ email, reference, firstName, lastName, webhookUrl, phone: phoneNumber }),
+    });
+    const rawText = await aspfiyResp.text();
     let aspfiyData: any = {};
     try { aspfiyData = JSON.parse(rawText); } catch { /* keep raw */ }
-    console.log(`Aspfiy reserve-palmpay status=${aspfiyResp.status}, body=`, rawText);
-
-    const palmpayFailed = !aspfiyResp.ok || aspfiyData?.status === false;
-    if (palmpayFailed) {
-      console.log("PalmPay reservation failed, falling back to Paga");
-      aspfiyResp = await fetch("https://api-v1.aspfiy.com/reserve-paga/", { method: "POST", headers: reserveHeaders, body: reservePayload });
-      rawText = await aspfiyResp.text();
-      try { aspfiyData = JSON.parse(rawText); } catch { /* keep raw */ }
-      console.log(`Aspfiy reserve-paga fallback status=${aspfiyResp.status}, body=`, rawText);
-    }
+    console.log(`Aspfiy reserve-paga status=${aspfiyResp.status}, body=`, rawText);
 
     if (!aspfiyResp.ok || aspfiyData?.status === false) {
       return jsonResponse({ error: "Failed to create virtual account", details: aspfiyData || rawText }, 400);
@@ -233,7 +224,7 @@ Deno.serve(async (req) => {
       acct.account_number || acct.accountNumber || acct.accountNo || null;
     const accountName =
       acct.account_name || acct.accountName || `${firstName} ${lastName}`.trim();
-    const bankName = acct.bank_name || acct.bankName || "PalmPay";
+    const bankName = acct.bank_name || acct.bankName || "Paga";
 
     if (!accountNumber) {
       console.warn("Aspfiy did not return an account number in the response. Awaiting webhook.");
