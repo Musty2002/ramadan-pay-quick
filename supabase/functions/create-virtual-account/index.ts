@@ -63,6 +63,7 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({})) as Partial<CreateVirtualAccountRequest>;
     const { userId, email: requestedEmail, name: requestedName, phoneNumber: rawPhone } = body;
+    const force = (body as any).force === true;
 
     if (!userId) {
       return jsonResponse({ error: "Missing user ID" }, 400);
@@ -109,7 +110,7 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Failed to check profile", details: profileLookupError }, 500);
     }
 
-    if (existingProfile?.virtual_account_name && existingProfile?.account_number) {
+    if (!force && existingProfile?.virtual_account_name && existingProfile?.account_number) {
       return jsonResponse({
         success: true,
         alreadyExists: true,
