@@ -194,29 +194,30 @@ Deno.serve(async (req) => {
     const reference = userId;
     const webhookUrl = `${supabaseUrl}/functions/v1/aspfiy-webhook`;
 
-    const aspfiyResp = await fetch("https://api-v1.aspfiy.com/reserve-palmpay/", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${aspfiySecretKey}`,
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-      },
-      body: JSON.stringify({
-        email,
-        reference,
-        firstName,
-        lastName,
-        webhookUrl,
-        phone: phoneNumber,
-      }),
-    });
+    const reservePayload = JSON.stringify({ email, reference, firstName, lastName, webhookUrl, phone: phoneNumber });
+    const reserveHeaders = {
+      "Authorization": `Bearer ${aspfiySecretKey}`,
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+    };
 
-    const rawText = await aspfiyResp.text();
+    // Try PalmPay first, then fall back to Paga if the provider can't reserve a PalmPay account
+    let aspfiyResp = await fetch("https://api-v1.aspfiy.com/reserve-palmpay/", { method: "POST", headers: reserveHeaders, body: reservePayload });
+    let rawText = await aspfiyResp.text();
     let aspfiyData: any = {};
     try { aspfiyData = JSON.parse(rawText); } catch { /* keep raw */ }
-    console.log(`Aspfiy reserve-paga status=${aspfiyResp.status}, body=`, rawText);
+    console.log(`Aspfiy reserve-palmpay status=${aspfiyResp.status}, body=`, rawText);
 
-    if (!aspfiyResp.ok) {
+    const palmpayFailed = !aspfiyResp.ok || aspfiyData?.status === false;
+    if (palmpayFailed) {
+      console.log("PalmPay reservation failed, falling back to Paga");
+      aspfiyResp = await fetch("https://api-v1.aspfiy.com/reserve-paga/", { method: "POST", headers: reserveHeaders, body: reservePayload });
+      rawText = await aspfiyResp.text();
+      try { aspfiyData = JSON.parse(rawText); } catch { /* keep raw */ }
+      console.log(`Aspfiy reserve-paga fallback status=${aspfiyResp.status}, body=`, rawText);
+    }
+
+    if (!aspfiyResp.ok || aspfiyData?.status === false) {
       return jsonResponse({ error: "Failed to create virtual account", details: aspfiyData || rawText }, 400);
     }
 
