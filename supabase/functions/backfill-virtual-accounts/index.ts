@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
 
       const { error: upErr } = await supabase
         .from("profiles")
-        .update({ account_number: accountNumber, virtual_account_name: accountName })
+        .update({ account_number: accountNumber, virtual_account_name: accountName, virtual_account_bank: "Paga" })
         .eq("user_id", p.user_id);
 
       if (upErr) {
