@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
     const lastName = nameParts.slice(1).join(" ") || firstName;
 
     try {
-      const resp = await fetch("https://api-v1.aspfiy.com/reserve-paga/", {
+      const resp = await fetch("https://api-v1.aspfiy.com/reserve-palmpay/", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${aspfiyKey}`,
@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
 
       const { error: upErr } = await supabase
         .from("profiles")
-        .update({ account_number: accountNumber, virtual_account_name: accountName, virtual_account_bank: "Paga" })
+        .update({ account_number: accountNumber, virtual_account_name: accountName, virtual_account_bank: "PalmPay" })
         .eq("user_id", p.user_id);
 
       if (upErr) {
