@@ -194,7 +194,7 @@ Deno.serve(async (req) => {
     const reference = userId;
     const webhookUrl = `${supabaseUrl}/functions/v1/aspfiy-webhook`;
 
-    const aspfiyResp = await fetch("https://api-v1.aspfiy.com/reserve-paga/", {
+    const aspfiyResp = await fetch("https://api-v1.aspfiy.com/reserve-palmpay/", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${aspfiySecretKey}`,
@@ -232,7 +232,7 @@ Deno.serve(async (req) => {
       acct.account_number || acct.accountNumber || acct.accountNo || null;
     const accountName =
       acct.account_name || acct.accountName || `${firstName} ${lastName}`.trim();
-    const bankName = acct.bank_name || acct.bankName || "Paga";
+    const bankName = acct.bank_name || acct.bankName || "PalmPay";
 
     if (!accountNumber) {
       console.warn("Aspfiy did not return an account number in the response. Awaiting webhook.");
