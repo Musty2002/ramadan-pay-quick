@@ -592,6 +592,55 @@ export default function UsersManagement() {
         </DialogContent>
       </Dialog>
 
+      {/* Fix Phone & Provision Account Dialog */}
+      <Dialog open={phoneDialogOpen} onOpenChange={setPhoneDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Phone className="w-5 h-5" />
+              Fix Phone & Provision Account
+            </DialogTitle>
+            <DialogDescription>
+              Update {selectedUser?.full_name}'s phone number and generate a new Paga virtual account in one step.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Current phone on file</Label>
+              <p className="font-mono text-sm">{selectedUser?.phone || '—'}</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="newPhone">New phone number</Label>
+              <Input
+                id="newPhone"
+                placeholder="08012345678"
+                value={newPhone}
+                onChange={(e) => setNewPhone(e.target.value)}
+                maxLength={14}
+              />
+              <p className="text-xs text-muted-foreground">
+                Must be a valid 11-digit Nigerian mobile starting with 070, 080, 081, or 090–091.
+              </p>
+            </div>
+            {selectedUser?.account_number && (
+              <div className="bg-secondary rounded-lg p-3 text-sm text-muted-foreground">
+                ⚠️ This user already has account <span className="font-mono">{selectedUser.account_number}</span>. A new one will replace it.
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPhoneDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleFixPhoneAndProvision} disabled={processing || !newPhone.trim()}>
+              {processing ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Provisioning…</>
+              ) : (
+                'Update & Provision'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Login Sessions Dialog */}
       <Dialog open={sessionsDialogOpen} onOpenChange={setSessionsDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-auto">
