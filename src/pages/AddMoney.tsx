@@ -124,12 +124,17 @@ export default function AddMoney() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Bank Name</p>
-                      <p className="font-semibold text-foreground">PalmPay</p>
+                      <p className="font-semibold text-foreground">
+                        {(() => {
+                          const b = profile?.virtual_account_bank || "Paga";
+                          return b.toLowerCase() === "paga" ? "Paga - Aspfiy" : b;
+                        })()}
+                      </p>
                     </div>
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => copyToClipboard('PalmPay', 'Bank name')}
+                      onClick={() => copyToClipboard(profile?.virtual_account_bank || 'Paga', 'Bank name')}
                     >
                       <Copy className="w-4 h-4" />
                     </Button>
