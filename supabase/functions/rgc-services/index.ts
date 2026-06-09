@@ -452,6 +452,29 @@ Deno.serve(async (req) => {
 
     console.log(`Processing ${action} for ${serviceType}`, JSON.stringify(body));
 
+    // BACKWARD COMPAT: RGC no longer offers airtime. Older mobile builds still
+    // call this function for airtime. Transparently forward to isquare-services
+    // so legacy clients keep working without a Play Store update.
+    if (serviceType === 'airtime') {
+      console.log('Forwarding airtime request to isquare-services');
+      const forwardUrl = `${supabaseUrl}/functions/v1/isquare-services`;
+      const forwardHeaders: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'apikey': Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      };
+      if (authHeader) forwardHeaders['Authorization'] = authHeader;
+      const forwardRes = await fetch(forwardUrl, {
+        method: 'POST',
+        headers: forwardHeaders,
+        body: JSON.stringify(body),
+      });
+      const forwardText = await forwardRes.text();
+      return new Response(forwardText, {
+        status: forwardRes.status,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Handle get-services - no auth required
     if (action === 'get-services') {
       const result = await getServices(serviceType);
