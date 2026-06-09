@@ -457,6 +457,26 @@ Deno.serve(async (req) => {
     // so legacy clients keep working without a Play Store update.
     if (serviceType === 'airtime') {
       console.log('Forwarding airtime request to isquare-services');
+
+      // Map legacy RGC airtime payload -> iSquare format.
+      // RGC product_ids: MTN=38, AIRTEL=39, 9MOBILE=40, GLO=41
+      // iSquare network ids: MTN=1, AIRTEL=2, GLO=3, 9MOBILE=4
+      const rgcToIsquare: Record<string, number> = {
+        '38': 1, '39': 2, '40': 4, '41': 3,
+        'MTN': 1, 'AIRTEL': 2, 'GLO': 3, '9MOBILE': 4,
+      };
+      const rawNetwork = (body as any).network ?? (body as any).network_id;
+      const key = String(rawNetwork ?? '').toUpperCase();
+      const isquareNetwork = rgcToIsquare[key] ?? (typeof rawNetwork === 'number' && rawNetwork >= 1 && rawNetwork <= 4 ? rawNetwork : undefined);
+
+      const forwardBody: any = {
+        ...body,
+        serviceType: 'airtime',
+        network: isquareNetwork,
+        phone_number: (body as any).phone_number ?? (body as any).mobile_number,
+        mobile_number: (body as any).mobile_number ?? (body as any).phone_number,
+      };
+
       const forwardUrl = `${supabaseUrl}/functions/v1/isquare-services`;
       const forwardHeaders: Record<string, string> = {
         'Content-Type': 'application/json',
@@ -466,7 +486,7 @@ Deno.serve(async (req) => {
       const forwardRes = await fetch(forwardUrl, {
         method: 'POST',
         headers: forwardHeaders,
-        body: JSON.stringify(body),
+        body: JSON.stringify(forwardBody),
       });
       const forwardText = await forwardRes.text();
       return new Response(forwardText, {
