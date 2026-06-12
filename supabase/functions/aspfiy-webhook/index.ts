@@ -84,7 +84,10 @@ Deno.serve(async (req) => {
 
     const merchantRef = payload.data.merchant_reference; // user_id, or user_id-timestamp after regeneration
     const accountNumber = normalizeAccountNumber(payload.data.account?.account_number);
-    const transactionRef = payload.data.reference || payload.data.aspfiy_ref;
+    // Aspfiy `reference` can be the reserved-account/customer reference on some
+    // deposits, so using it first can make every later deposit look duplicate.
+    // `aspfiy_ref` is the inter-bank/payment reference and is unique per credit.
+    const transactionRef = payload.data.aspfiy_ref || payload.data.reference;
     const amount = Number(payload.data.amount || 0);
 
     if (!transactionRef || !amount || amount <= 0) {
