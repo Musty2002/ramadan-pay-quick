@@ -191,8 +191,9 @@ Deno.serve(async (req) => {
     const firstName = nameParts[0] || "User";
     const lastName = nameParts.slice(1).join(" ") || firstName;
 
-    // Use the user id as the unique merchant reference
-    const reference = userId;
+    // Use the user id as the merchant reference. On force-regenerate we MUST
+    // send a fresh reference, otherwise Aspfiy responds with "Reference already exist".
+    const reference = force ? `${userId}-${Date.now()}` : userId;
     const webhookUrl = `${supabaseUrl}/functions/v1/aspfiy-webhook`;
 
     const aspfiyResp = await fetch("https://api-v1.aspfiy.com/reserve-paga/", {
@@ -225,7 +226,9 @@ Deno.serve(async (req) => {
       acct.account_number || acct.accountNumber || acct.accountNo || null;
     const accountName =
       acct.account_name || acct.accountName || `${firstName} ${lastName}`.trim();
-    const bankName = acct.bank_name || acct.bankName || "Paga";
+    // Always brand Aspfiy accounts as "Paga - Aspfiy" regardless of the
+    // underlying settlement bank returned by Aspfiy (PalmPay, 9PSB, etc.).
+    const bankName = "Paga - Aspfiy";
 
     if (!accountNumber) {
       console.warn("Aspfiy did not return an account number in the response. Awaiting webhook.");
