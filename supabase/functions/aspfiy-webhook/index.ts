@@ -36,6 +36,20 @@ const json = (body: unknown, status = 200) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 
+function normalizeAccountNumber(raw: unknown): string | null {
+  const digits = String(raw || "").replace(/\D/g, "");
+  if (!digits) return null;
+  if (digits.length === 9) return digits.padStart(10, "0");
+  if (digits.length > 10) return digits.slice(-10);
+  return digits;
+}
+
+function extractUserIdFromReference(raw: unknown): string | null {
+  const ref = String(raw || "");
+  const match = ref.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+  return match?.[0] || null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -68,8 +82,8 @@ Deno.serve(async (req) => {
       return json({ message: "ignored" });
     }
 
-    const merchantRef = payload.data.merchant_reference; // we set this to user_id
-    const accountNumber = payload.data.account?.account_number;
+    const merchantRef = payload.data.merchant_reference; // user_id, or user_id-timestamp after regeneration
+    const accountNumber = normalizeAccountNumber(payload.data.account?.account_number);
     const transactionRef = payload.data.reference || payload.data.aspfiy_ref;
     const amount = Number(payload.data.amount || 0);
 
@@ -80,20 +94,23 @@ Deno.serve(async (req) => {
     // Locate profile by merchant_reference (user_id) first, fall back to account_number
     let profile: { user_id: string; full_name: string } | null = null;
 
-    if (merchantRef) {
-      const { data } = await supabase
+    const merchantUserId = extractUserIdFromReference(merchantRef);
+    if (merchantUserId) {
+      const { data, error } = await supabase
         .from("profiles")
         .select("user_id, full_name")
-        .eq("user_id", merchantRef)
+        .eq("user_id", merchantUserId)
         .maybeSingle();
+      if (error) console.error("Merchant reference lookup failed:", error);
       if (data) profile = data as any;
     }
     if (!profile && accountNumber) {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("profiles")
         .select("user_id, full_name")
         .eq("account_number", accountNumber)
         .maybeSingle();
+      if (error) console.error("Account lookup failed:", error);
       if (data) profile = data as any;
     }
 
@@ -117,51 +134,34 @@ Deno.serve(async (req) => {
         .is("virtual_account_name", null);
     }
 
-    // Duplicate-guard
-    const { data: existingTxn } = await supabase
-      .from("transactions")
-      .select("id")
-      .eq("reference", transactionRef)
-      .maybeSingle();
-    if (existingTxn) {
-      console.log("Already processed:", transactionRef);
-      return json({ message: "duplicate" });
-    }
-
-    const { data: wallet, error: walletError } = await supabase
-      .from("wallets")
-      .select("id, balance")
-      .eq("user_id", profile.user_id)
-      .single();
-    if (walletError || !wallet) return json({ error: "Wallet not found" }, 404);
-
-    const newBalance = Number(wallet.balance) + amount;
-    const { error: updateError } = await supabase
-      .from("wallets")
-      .update({ balance: newBalance, updated_at: new Date().toISOString() })
-      .eq("id", wallet.id);
-    if (updateError) return json({ error: "Failed to update wallet" }, 500);
-
     const payerName = [payload.data.payer?.first_name, payload.data.payer?.last_name]
       .filter(Boolean)
       .join(" ")
       .trim() || "Unknown Sender";
 
-    await supabase.from("transactions").insert({
-      user_id: profile.user_id,
-      type: "credit",
-      category: "deposit",
-      amount,
-      description: `Deposit from ${payerName}`,
-      reference: transactionRef,
-      status: "completed",
-      metadata: {
+    const { data: newBalance, error: creditError } = await supabase.rpc("process_aspfiy_deposit", {
+      p_user_id: profile.user_id,
+      p_reference: transactionRef,
+      p_amount: amount,
+      p_description: `Deposit from ${payerName}`,
+      p_metadata: {
         sender_name: payerName,
         sender_account: payload.data.payer?.account_number,
         aspfiy_ref: payload.data.aspfiy_ref,
         timestamp: payload.data.created_at,
+        merchant_reference: merchantRef,
+        account_number: accountNumber,
       },
     });
+
+    if (creditError) {
+      if (creditError.code === "23505") {
+        console.log("Already processed:", transactionRef);
+        return json({ message: "duplicate" });
+      }
+      console.error("Failed to credit Aspfiy deposit:", creditError);
+      return json({ error: "Failed to credit wallet", details: creditError.message }, 500);
+    }
 
     await supabase.from("notifications").insert({
       user_id: profile.user_id,
