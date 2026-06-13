@@ -13,6 +13,8 @@ interface AspfiyWebhook {
     reference?: string;
     merchant_reference?: string;
     aspfiy_ref?: string;
+    wiaxy_ref?: string;
+    transaction_ref?: string;
     amount?: string | number;
     created_at?: string;
     account?: {
@@ -86,8 +88,14 @@ Deno.serve(async (req) => {
     const accountNumber = normalizeAccountNumber(payload.data.account?.account_number);
     // Aspfiy `reference` can be the reserved-account/customer reference on some
     // deposits, so using it first can make every later deposit look duplicate.
-    // `aspfiy_ref` is the inter-bank/payment reference and is unique per credit.
-    const transactionRef = payload.data.aspfiy_ref || payload.data.reference;
+    // `reference` is the reserved-account reference and repeats for every deposit.
+    // Aspfiy sends the unique per-payment ID as `transaction_ref` / `wiaxy_ref`
+    // on live callbacks, so use those first to avoid rejecting later deposits.
+    const transactionRef =
+      payload.data.transaction_ref ||
+      payload.data.wiaxy_ref ||
+      payload.data.aspfiy_ref ||
+      payload.data.reference;
     const amount = Number(payload.data.amount || 0);
 
     if (!transactionRef || !amount || amount <= 0) {
@@ -151,6 +159,8 @@ Deno.serve(async (req) => {
         sender_name: payerName,
         sender_account: payload.data.payer?.account_number,
         aspfiy_ref: payload.data.aspfiy_ref,
+        wiaxy_ref: payload.data.wiaxy_ref,
+        transaction_ref: payload.data.transaction_ref,
         timestamp: payload.data.created_at,
         merchant_reference: merchantRef,
         account_number: accountNumber,
