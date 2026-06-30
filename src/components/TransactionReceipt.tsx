@@ -198,16 +198,9 @@ ${transaction.type === 'data' && transaction.dataPlan ? `📦 Data Plan: ${trans
   const StatusIconTop = isSuccess ? CheckCircle : isFailed ? XCircle : Clock;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col">
-      {/* Backdrop - top half */}
-      <div className="flex-1 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      
-      {/* Receipt Panel - bottom half */}
-      <div className="bg-gray-50 rounded-t-3xl max-h-[90vh] overflow-hidden animate-in slide-in-from-bottom duration-300 relative">
-        {/* Handle bar */}
-        <div className="flex justify-center pt-3 pb-2">
-          <div className="w-10 h-1 rounded-full bg-gray-300" />
-        </div>
+    <div className="fixed inset-0 z-50 flex flex-col bg-gray-50 animate-in fade-in duration-200">
+      {/* Full-screen Receipt Panel */}
+      <div className="flex-1 overflow-hidden relative">
 
         {/* Top bar with Done */}
         <div className="flex items-center justify-between px-4 pb-2">
@@ -222,7 +215,7 @@ ${transaction.type === 'data' && transaction.dataPlan ? `📦 Data Plan: ${trans
         </div>
 
         {/* Scrollable content */}
-        <div className="overflow-y-auto max-h-[calc(90vh-80px)] pb-6 px-4">
+        <div className="overflow-y-auto h-full pb-6 px-4">
           {!showDetails ? (
             <>
               {/* Opay-style success summary */}
