@@ -225,10 +225,10 @@ export function AccountCard() {
               {showBalance ? formatBalance(wallet?.balance || 0) : '₦ ****'}
             </h2>
             <p className="text-sm font-semibold leading-tight">Welcome {(profile?.full_name || 'User').split(' ')[0]},</p>
-            <p className="text-[11px] uppercase tracking-wide opacity-90 mb-3">All services are going smoothly</p>
+            <p className="text-[10px] opacity-80 mb-2">All services are going smoothly</p>
 
-            <div className="inline-flex items-center gap-1.5 bg-secondary/95 rounded-full pl-2 pr-3 py-1 text-[11px] font-medium shadow">
-              <Bell className="w-3 h-3" />
+            <div className="inline-flex items-center gap-1 bg-secondary/95 rounded-full px-2 py-0.5 text-[10px] font-medium shadow">
+              <Bell className="w-2.5 h-2.5" />
               <span>Balance updated: {lastUpdated}</span>
             </div>
           </div>
@@ -240,12 +240,12 @@ export function AccountCard() {
               width={120}
               height={120}
               loading="lazy"
-              className="w-24 h-24 md:w-28 md:h-28 object-contain drop-shadow-xl -mt-1 -mr-1"
+              className="w-20 h-20 md:w-24 md:h-24 object-contain drop-shadow-xl -mt-1 -mr-1"
             />
             <button
               onClick={() => navigate('/add-money')}
               disabled={!isAccountReady}
-              className="mt-2 inline-flex items-center gap-1 bg-white text-secondary font-bold text-sm rounded-full px-4 py-2 shadow-md hover:shadow-lg active:scale-95 transition disabled:opacity-50"
+              className="mt-2 inline-flex items-center gap-1 bg-white text-secondary font-bold text-xs rounded-full px-3 py-1.5 shadow-md hover:shadow-lg active:scale-95 transition disabled:opacity-50"
             >
               <Plus className="w-4 h-4" strokeWidth={3} />
               Add Money
@@ -256,29 +256,29 @@ export function AccountCard() {
 
       {/* Account Info Card */}
       {isAccountReady ? (
-        <div className="bg-card rounded-2xl shadow-sm border border-border/60 p-2 grid grid-cols-3 gap-0.5">
-          <div className="flex items-start gap-1 min-w-0">
-            <UserIcon className="w-3.5 h-3.5 text-secondary shrink-0 mt-0.5" />
+        <div className="bg-card rounded-2xl shadow-sm border border-border/60 p-1.5 grid grid-cols-[1fr_1fr_1.3fr] gap-0.5">
+          <div className="flex items-start gap-0.5 min-w-0">
+            <UserIcon className="w-3 h-3 text-secondary shrink-0 mt-px" />
             <div className="min-w-0">
-              <p className="text-[8px] uppercase tracking-wide text-muted-foreground font-semibold leading-tight">Acct Name</p>
-              <p className="text-[11px] font-bold text-foreground truncate">{accountName}</p>
+              <p className="text-[7px] uppercase tracking-wide text-muted-foreground font-semibold leading-tight">Acct Name</p>
+              <p className="text-[10px] font-medium text-foreground tabular-nums">{accountName}</p>
             </div>
           </div>
-          <div className="flex items-start gap-1 min-w-0 border-l border-border/60 pl-1.5">
-            <Building2 className="w-3.5 h-3.5 text-secondary shrink-0 mt-0.5" />
+          <div className="flex items-start gap-0.5 min-w-0 border-l border-border/60 pl-1">
+            <Building2 className="w-3 h-3 text-secondary shrink-0 mt-px" />
             <div className="min-w-0">
-              <p className="text-[8px] uppercase tracking-wide text-muted-foreground font-semibold leading-tight">Bank</p>
-              <p className="text-[11px] font-bold text-foreground truncate">{bankName}</p>
+              <p className="text-[7px] uppercase tracking-wide text-muted-foreground font-semibold leading-tight">Bank</p>
+              <p className="text-[10px] font-medium text-foreground tabular-nums truncate">{bankName}</p>
             </div>
           </div>
-          <div className="flex items-start gap-1 min-w-0 border-l border-border/60 pl-1.5">
-            <CreditCard className="w-3.5 h-3.5 text-secondary shrink-0 mt-0.5" />
+          <div className="flex items-start gap-0.5 min-w-0 border-l border-border/60 pl-1">
+            <CreditCard className="w-3 h-3 text-secondary shrink-0 mt-px" />
             <div className="min-w-0 flex-1">
-              <p className="text-[8px] uppercase tracking-wide text-muted-foreground font-semibold leading-tight">Acct No</p>
+              <p className="text-[7px] uppercase tracking-wide text-muted-foreground font-semibold leading-tight">Acct No</p>
               <div className="flex items-center gap-0.5">
-                <p className="text-[11px] font-bold text-foreground truncate">{profile?.account_number}</p>
-                <button onClick={copyAccountNumber} className="p-0.5 text-secondary hover:opacity-70">
-                  <Copy className="w-3 h-3" />
+                <p className="text-[10px] font-medium text-foreground tabular-nums whitespace-nowrap">{profile?.account_number}</p>
+                <button onClick={copyAccountNumber} className="shrink-0 text-secondary hover:opacity-70">
+                  <Copy className="w-2.5 h-2.5" />
                 </button>
               </div>
             </div>
