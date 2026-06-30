@@ -301,7 +301,7 @@ export function AccountCard() {
       )}
 
       {/* Quick Actions */}
-      <div className="bg-card rounded-2xl shadow-sm border border-border/60 p-3 grid grid-cols-3 gap-1">
+      <div className="bg-card rounded-2xl shadow-sm border border-border/60 p-2 grid grid-cols-3 gap-1">
         {[
           { icon: History, label: 'History', path: '/history' },
           { icon: Users, label: 'Refer & Earn', path: '/referral' },
@@ -310,10 +310,10 @@ export function AccountCard() {
           <button
             key={path}
             onClick={() => navigate(path)}
-            className="flex flex-col items-center gap-1.5 py-2 rounded-xl hover:bg-muted/60 transition active:scale-95"
+            className="flex flex-col items-center gap-1 py-1.5 rounded-xl hover:bg-muted/60 transition active:scale-95"
           >
-            <Icon className="w-6 h-6 text-secondary" strokeWidth={2.2} />
-            <span className="text-xs font-semibold text-foreground">{label}</span>
+            <Icon className="w-5 h-5 text-secondary" strokeWidth={2.2} />
+            <span className="text-[10px] font-semibold text-foreground">{label}</span>
           </button>
         ))}
       </div>
