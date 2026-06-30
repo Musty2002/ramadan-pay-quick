@@ -215,7 +215,7 @@ ${transaction.type === 'data' && transaction.dataPlan ? `📦 Data Plan: ${trans
         </div>
 
         {/* Scrollable content */}
-        <div className="overflow-y-auto max-h-[calc(90vh-80px)] pb-6 px-4">
+        <div className="overflow-y-auto h-full pb-6 px-4">
           {!showDetails ? (
             <>
               {/* Opay-style success summary */}
