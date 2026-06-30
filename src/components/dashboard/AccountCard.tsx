@@ -104,7 +104,7 @@ export function AccountCard() {
   const isAccountReady = hasVirtualAccount && profile?.virtual_account_name;
   const storedBank = profile?.virtual_account_bank || "Paga";
   const bankName = storedBank.toLowerCase() === "paga" ? "Paga - Aspfiy" : storedBank;
-  const accountName = profile?.virtual_account_name || null;
+  const accountName = "Aspfiy";
 
   const canWithdrawCashback = (cashbackWallet?.balance || 0) >= 100;
 
