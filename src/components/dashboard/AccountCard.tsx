@@ -256,29 +256,29 @@ export function AccountCard() {
 
       {/* Account Info Card */}
       {isAccountReady ? (
-        <div className="bg-card rounded-2xl shadow-sm border border-border/60 p-4 grid grid-cols-3 gap-2">
-          <div className="flex items-start gap-2 min-w-0">
-            <UserIcon className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
+        <div className="bg-card rounded-2xl shadow-sm border border-border/60 p-2.5 grid grid-cols-3 gap-1">
+          <div className="flex items-start gap-1.5 min-w-0">
+            <UserIcon className="w-4 h-4 text-secondary shrink-0 mt-0.5" />
             <div className="min-w-0">
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Account Name</p>
-              <p className="text-sm font-bold text-foreground truncate">{accountName}</p>
+              <p className="text-[9px] uppercase tracking-wide text-muted-foreground font-semibold">Account Name</p>
+              <p className="text-xs font-bold text-foreground truncate">{accountName}</p>
             </div>
           </div>
-          <div className="flex items-start gap-2 min-w-0 border-l border-border/60 pl-3">
-            <Building2 className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
+          <div className="flex items-start gap-1.5 min-w-0 border-l border-border/60 pl-2">
+            <Building2 className="w-4 h-4 text-secondary shrink-0 mt-0.5" />
             <div className="min-w-0">
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Bank Name</p>
-              <p className="text-sm font-bold text-foreground truncate">{bankName}</p>
+              <p className="text-[9px] uppercase tracking-wide text-muted-foreground font-semibold">Bank Name</p>
+              <p className="text-xs font-bold text-foreground truncate">{bankName}</p>
             </div>
           </div>
-          <div className="flex items-start gap-2 min-w-0 border-l border-border/60 pl-3">
-            <CreditCard className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
+          <div className="flex items-start gap-1.5 min-w-0 border-l border-border/60 pl-2">
+            <CreditCard className="w-4 h-4 text-secondary shrink-0 mt-0.5" />
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Acct Number</p>
+              <p className="text-[9px] uppercase tracking-wide text-muted-foreground font-semibold">Acct Number</p>
               <div className="flex items-center gap-1">
-                <p className="text-sm font-bold text-foreground truncate">{profile?.account_number}</p>
+                <p className="text-xs font-bold text-foreground truncate">{profile?.account_number}</p>
                 <button onClick={copyAccountNumber} className="p-0.5 text-secondary hover:opacity-70">
-                  <Copy className="w-3.5 h-3.5" />
+                  <Copy className="w-3 h-3" />
                 </button>
               </div>
             </div>
@@ -319,16 +319,16 @@ export function AccountCard() {
       </div>
 
       {/* Cashback Wallet Card */}
-      <div className="rounded-2xl p-4 text-white shadow-md"
+      <div className="rounded-2xl p-3 text-white shadow-md"
         style={{ background: 'linear-gradient(135deg, hsl(215 80% 45%) 0%, hsl(215 72% 38%) 100%)' }}>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 bg-white/20 rounded-full flex items-center justify-center">
-              <Gift className="w-5 h-5" />
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center">
+              <Gift className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-sm font-medium opacity-95">Cashback Balance</p>
-              <p className="text-2xl font-extrabold leading-tight">
+              <p className="text-xs font-medium opacity-95">Cashback Balance</p>
+              <p className="text-xl font-extrabold leading-tight">
                 {showBalance ? formatBalance(cashbackWallet?.balance || 0) : '₦ ****'}
               </p>
             </div>
@@ -336,25 +336,25 @@ export function AccountCard() {
           <button
             onClick={handleWithdrawCashback}
             disabled={!canWithdrawCashback || isWithdrawing}
-            className="inline-flex items-center gap-1 bg-white text-secondary font-bold text-sm rounded-full px-4 py-2 shadow disabled:opacity-50 active:scale-95 transition"
+            className="inline-flex items-center gap-1 bg-white text-secondary font-bold text-xs rounded-full px-3 py-1.5 shadow disabled:opacity-50 active:scale-95 transition"
           >
             {isWithdrawing ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
+              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
             ) : (
               <>
                 Withdraw
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-3.5 h-3.5" />
               </>
             )}
           </button>
         </div>
-        <div className="mt-3 bg-white/10 rounded-lg px-3 py-2 space-y-0.5">
+        <div className="mt-2 bg-white/10 rounded-lg px-2.5 py-1.5 space-y-0.5">
           {!canWithdrawCashback && (cashbackWallet?.balance || 0) > 0 && (
-            <p className="text-[11px] opacity-95">
+            <p className="text-[10px] opacity-95">
               Minimum ₦100 required to withdraw ({formatBalance(100 - (cashbackWallet?.balance || 0))} more needed)
             </p>
           )}
-          <p className="text-[11px] opacity-90">
+          <p className="text-[10px] opacity-90">
             Earn ₦5/GB on data • ₦2/₦100 on airtime
           </p>
         </div>
