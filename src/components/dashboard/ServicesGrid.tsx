@@ -24,15 +24,15 @@ export function ServicesGrid() {
           See All <ChevronRight className="w-3 h-3" />
         </button>
       </div>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2">
         {services.map(({ icon: Icon, label, path, color }) => (
           <button
             key={label}
             onClick={() => navigate(path)}
-            className="bg-card border border-border/60 rounded-2xl shadow-sm flex flex-col items-center justify-center py-5 gap-2 hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all"
+            className="bg-card border border-border/60 rounded-xl shadow-sm flex flex-col items-center justify-center py-3.5 gap-1.5 hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all"
           >
-            <Icon className={`w-7 h-7 ${color}`} strokeWidth={2.2} />
-            <span className="text-xs font-semibold text-foreground">{label}</span>
+            <Icon className={`w-6 h-6 ${color}`} strokeWidth={2.2} />
+            <span className="text-[11px] font-semibold text-foreground">{label}</span>
           </button>
         ))}
       </div>
