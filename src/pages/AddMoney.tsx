@@ -190,27 +190,11 @@ export default function AddMoney() {
                   </div>
                 </div>
 
-                <Button
-                  variant="outline"
-                  onClick={() => createVirtualAccount(true)}
-                  disabled={isRegenerating}
-                  className="w-full"
-                >
-                  {isRegenerating ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Regenerating...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Regenerate Account Number
-                    </>
-                  )}
-                </Button>
-                <p className="text-xs text-muted-foreground text-center">
-                  Having issues with your account number? Tap above to regenerate it.
-                </p>
+                <div className="bg-secondary/50 rounded-xl p-4 text-center">
+                  <p className="text-sm font-medium text-foreground">
+                    You already have an account number
+                  </p>
+                </div>
               </div>
             ) : (
               <div className="text-center py-6">
