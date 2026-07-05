@@ -1,5 +1,5 @@
 import { MobileLayout } from '@/components/layout/MobileLayout';
-import { ArrowLeft, Copy, Building2, Loader2, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Copy, Building2, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -12,7 +12,7 @@ export default function AddMoney() {
   const { profile, user, refreshProfile } = useAuth();
   const { toast } = useToast();
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
-  const [isRegenerating, setIsRegenerating] = useState(false);
+  
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -34,8 +34,7 @@ export default function AddMoney() {
       return;
     }
 
-    if (force) setIsRegenerating(true);
-    else setIsCreatingAccount(true);
+    setIsCreatingAccount(true);
     try {
       // Sanitize phone number
       let phone = (profile.phone || "").replace(/[\s\-()]/g, "");
@@ -88,7 +87,6 @@ export default function AddMoney() {
       });
     } finally {
       setIsCreatingAccount(false);
-      setIsRegenerating(false);
     }
   };
 
@@ -124,30 +122,25 @@ export default function AddMoney() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Bank Name</p>
-                       <p className="font-semibold text-foreground">
-                         {(() => {
-                           const name = profile?.virtual_account_name || "";
-                           const b = profile?.virtual_account_bank || "Paga";
-                           // Aspfiy-provisioned accounts always display as "Paga - Aspfiy",
-                           // regardless of the underlying settlement bank (PalmPay, 9PSB, etc.)
-                           const isAspfiy =
-                             name.toLowerCase().startsWith("aspfiy") ||
-                             ["paga", "palmpay"].includes(b.toLowerCase());
-                           return isAspfiy ? "Paga - Aspfiy" : b;
-                         })()}
-                       </p>
+                      <p className="font-semibold text-foreground">
+                        {(() => {
+                          const b = profile?.virtual_account_bank || "";
+                          if (b.toLowerCase().includes("aspfiy")) return "ASPFIY";
+                          if (b.toLowerCase().includes("palmpay")) return "PalmPay";
+                          return b;
+                        })()}
+                      </p>
                     </div>
                     <Button
                       variant="ghost"
                       size="icon"
-                       onClick={() => {
-                         const name = profile?.virtual_account_name || "";
-                         const b = profile?.virtual_account_bank || "Paga";
-                         const isAspfiy =
-                           name.toLowerCase().startsWith("aspfiy") ||
-                           ["paga", "palmpay"].includes(b.toLowerCase());
-                         copyToClipboard(isAspfiy ? "Paga - Aspfiy" : b, "Bank name");
-                       }}
+                        onClick={() => {
+                          const b = profile?.virtual_account_bank || "";
+                          let display = b;
+                          if (b.toLowerCase().includes("aspfiy")) display = "ASPFIY";
+                          else if (b.toLowerCase().includes("palmpay")) display = "PalmPay";
+                          copyToClipboard(display, "Bank name");
+                        }}
                     >
                       <Copy className="w-4 h-4" />
                     </Button>
@@ -190,27 +183,11 @@ export default function AddMoney() {
                   </div>
                 </div>
 
-                <Button
-                  variant="outline"
-                  onClick={() => createVirtualAccount(true)}
-                  disabled={isRegenerating}
-                  className="w-full"
-                >
-                  {isRegenerating ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Regenerating...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Regenerate Account Number
-                    </>
-                  )}
-                </Button>
-                <p className="text-xs text-muted-foreground text-center">
-                  Having issues with your account number? Tap above to regenerate it.
-                </p>
+                <div className="bg-secondary/50 rounded-xl p-4 text-center">
+                  <p className="text-sm font-medium text-foreground">
+                    You already have an account number
+                  </p>
+                </div>
               </div>
             ) : (
               <div className="text-center py-6">
