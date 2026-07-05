@@ -124,30 +124,25 @@ export default function AddMoney() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Bank Name</p>
-                       <p className="font-semibold text-foreground">
-                         {(() => {
-                           const name = profile?.virtual_account_name || "";
-                           const b = profile?.virtual_account_bank || "Paga";
-                           // Aspfiy-provisioned accounts always display as "Paga - Aspfiy",
-                           // regardless of the underlying settlement bank (PalmPay, 9PSB, etc.)
-                           const isAspfiy =
-                             name.toLowerCase().startsWith("aspfiy") ||
-                             ["paga", "palmpay"].includes(b.toLowerCase());
-                           return isAspfiy ? "Paga - Aspfiy" : b;
-                         })()}
-                       </p>
+                      <p className="font-semibold text-foreground">
+                        {(() => {
+                          const b = profile?.virtual_account_bank || "";
+                          if (b.toLowerCase().includes("aspfiy")) return "ASPFIY";
+                          if (b.toLowerCase().includes("palmpay")) return "PalmPay";
+                          return b;
+                        })()}
+                      </p>
                     </div>
                     <Button
                       variant="ghost"
                       size="icon"
-                       onClick={() => {
-                         const name = profile?.virtual_account_name || "";
-                         const b = profile?.virtual_account_bank || "Paga";
-                         const isAspfiy =
-                           name.toLowerCase().startsWith("aspfiy") ||
-                           ["paga", "palmpay"].includes(b.toLowerCase());
-                         copyToClipboard(isAspfiy ? "Paga - Aspfiy" : b, "Bank name");
-                       }}
+                        onClick={() => {
+                          const b = profile?.virtual_account_bank || "";
+                          let display = b;
+                          if (b.toLowerCase().includes("aspfiy")) display = "ASPFIY";
+                          else if (b.toLowerCase().includes("palmpay")) display = "PalmPay";
+                          copyToClipboard(display, "Bank name");
+                        }}
                     >
                       <Copy className="w-4 h-4" />
                     </Button>
