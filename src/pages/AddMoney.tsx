@@ -34,8 +34,7 @@ export default function AddMoney() {
       return;
     }
 
-    if (force) setIsRegenerating(true);
-    else setIsCreatingAccount(true);
+    setIsCreatingAccount(true);
     try {
       // Sanitize phone number
       let phone = (profile.phone || "").replace(/[\s\-()]/g, "");
