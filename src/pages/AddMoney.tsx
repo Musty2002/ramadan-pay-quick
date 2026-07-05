@@ -1,5 +1,5 @@
 import { MobileLayout } from '@/components/layout/MobileLayout';
-import { ArrowLeft, Copy, Building2, Loader2, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Copy, Building2, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -12,7 +12,7 @@ export default function AddMoney() {
   const { profile, user, refreshProfile } = useAuth();
   const { toast } = useToast();
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
-  const [isRegenerating, setIsRegenerating] = useState(false);
+  
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
