@@ -191,7 +191,7 @@ ${transaction.type === 'data' && transaction.dataPlan ? `📦 Data Plan: ${trans
     : 'completed';
   const isSuccess = effectiveStatus === 'completed';
   const isFailed = effectiveStatus === 'failed';
-  const statusColor = isSuccess ? 'bg-green-500' : isFailed ? 'bg-red-500' : 'bg-yellow-500';
+  const statusColor = isSuccess ? 'bg-red-500' : isFailed ? 'bg-red-500' : 'bg-yellow-500';
   const statusTitle = isSuccess
     ? (transaction.type === 'data' ? 'Data Purchase Successful' : 'Airtime Purchase Successful')
     : isFailed ? 'Transaction Failed' : 'Transaction Pending';
@@ -209,7 +209,7 @@ ${transaction.type === 'data' && transaction.dataPlan ? `📦 Data Plan: ${trans
               <ChevronLeft className="w-4 h-4" /> Back
             </button>
           ) : <span className="w-12" />}
-          <button onClick={onClose} className="text-green-600 font-semibold text-base px-2 py-1">
+          <button onClick={onClose} className="text-red-600 font-semibold text-base px-2 py-1">
             Done
           </button>
         </div>
@@ -246,8 +246,8 @@ ${transaction.type === 'data' && transaction.dataPlan ? `📦 Data Plan: ${trans
                   onClick={handleShare}
                   className="bg-white rounded-2xl p-4 flex items-center gap-3 shadow-sm active:scale-[0.98] transition-transform"
                 >
-                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                    <Share2 className="w-5 h-5 text-green-600" />
+                  <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                    <Share2 className="w-5 h-5 text-red-600" />
                   </div>
                   <span className="text-sm font-semibold text-gray-800">Share Receipt</span>
                 </button>
@@ -255,8 +255,8 @@ ${transaction.type === 'data' && transaction.dataPlan ? `📦 Data Plan: ${trans
                   onClick={() => { onClose(); navigate('/add-money'); }}
                   className="bg-white rounded-2xl p-4 flex items-center gap-3 shadow-sm active:scale-[0.98] transition-transform"
                 >
-                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                    <Plus className="w-5 h-5 text-green-600" />
+                  <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                    <Plus className="w-5 h-5 text-red-600" />
                   </div>
                   <span className="text-sm font-semibold text-gray-800">Add Money</span>
                 </button>
@@ -264,8 +264,8 @@ ${transaction.type === 'data' && transaction.dataPlan ? `📦 Data Plan: ${trans
                   onClick={() => { onClose(); navigate('/referral'); }}
                   className="bg-white rounded-2xl p-4 flex items-center gap-3 shadow-sm active:scale-[0.98] transition-transform"
                 >
-                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                    <Gift className="w-5 h-5 text-green-600" />
+                  <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                    <Gift className="w-5 h-5 text-red-600" />
                   </div>
                   <span className="text-sm font-semibold text-gray-800">Refer & Earn</span>
                 </button>
@@ -273,8 +273,8 @@ ${transaction.type === 'data' && transaction.dataPlan ? `📦 Data Plan: ${trans
                   onClick={() => setShowDetails(true)}
                   className="bg-white rounded-2xl p-4 flex items-center gap-3 shadow-sm active:scale-[0.98] transition-transform"
                 >
-                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                    <FileText className="w-5 h-5 text-green-600" />
+                  <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-red-600" />
                   </div>
                   <span className="text-sm font-semibold text-gray-800">View Details</span>
                 </button>
@@ -334,7 +334,7 @@ ${transaction.type === 'data' && transaction.dataPlan ? `📦 Data Plan: ${trans
                 const isSuccess = effectiveStatus === 'completed';
                 const isFailed = effectiveStatus === 'failed';
                 const bannerGradient = isSuccess 
-                  ? 'from-green-500 to-emerald-500 shadow-green-500/20' 
+                  ? 'from-red-500 to-red-600 shadow-red-500/20' 
                   : isFailed 
                     ? 'from-red-500 to-red-600 shadow-red-500/20' 
                     : 'from-yellow-500 to-amber-500 shadow-yellow-500/20';
@@ -475,7 +475,7 @@ function RichReceiptBody({ transaction, transactionId, networkKey }: { transacti
     : 'completed';
   const isSuccess = effectiveStatus === 'completed';
   const isFailed = effectiveStatus === 'failed';
-  const bannerGradient = isSuccess ? 'from-green-500 to-emerald-500' : isFailed ? 'from-red-500 to-red-600' : 'from-yellow-500 to-amber-500';
+  const bannerGradient = isSuccess ? 'from-red-500 to-red-600' : isFailed ? 'from-red-500 to-red-600' : 'from-yellow-500 to-amber-500';
   const StatusIcon = isSuccess ? CheckCircle : isFailed ? XCircle : Clock;
   const statusText = isSuccess ? 'TRANSACTION SUCCESSFUL' : isFailed ? 'TRANSACTION FAILED' : 'TRANSACTION PENDING';
   return (
