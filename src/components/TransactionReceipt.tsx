@@ -475,7 +475,7 @@ function RichReceiptBody({ transaction, transactionId, networkKey }: { transacti
     : 'completed';
   const isSuccess = effectiveStatus === 'completed';
   const isFailed = effectiveStatus === 'failed';
-  const bannerGradient = isSuccess ? 'from-green-500 to-emerald-500' : isFailed ? 'from-red-500 to-red-600' : 'from-yellow-500 to-amber-500';
+  const bannerGradient = isSuccess ? 'from-red-500 to-red-600' : isFailed ? 'from-red-500 to-red-600' : 'from-yellow-500 to-amber-500';
   const StatusIcon = isSuccess ? CheckCircle : isFailed ? XCircle : Clock;
   const statusText = isSuccess ? 'TRANSACTION SUCCESSFUL' : isFailed ? 'TRANSACTION FAILED' : 'TRANSACTION PENDING';
   return (
