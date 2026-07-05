@@ -87,7 +87,6 @@ export default function AddMoney() {
       });
     } finally {
       setIsCreatingAccount(false);
-      setIsRegenerating(false);
     }
   };
 
