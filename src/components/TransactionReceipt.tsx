@@ -209,7 +209,7 @@ ${transaction.type === 'data' && transaction.dataPlan ? `📦 Data Plan: ${trans
               <ChevronLeft className="w-4 h-4" /> Back
             </button>
           ) : <span className="w-12" />}
-          <button onClick={onClose} className="text-green-600 font-semibold text-base px-2 py-1">
+          <button onClick={onClose} className="text-red-600 font-semibold text-base px-2 py-1">
             Done
           </button>
         </div>
