@@ -191,7 +191,7 @@ ${transaction.type === 'data' && transaction.dataPlan ? `📦 Data Plan: ${trans
     : 'completed';
   const isSuccess = effectiveStatus === 'completed';
   const isFailed = effectiveStatus === 'failed';
-  const statusColor = isSuccess ? 'bg-green-500' : isFailed ? 'bg-red-500' : 'bg-yellow-500';
+  const statusColor = isSuccess ? 'bg-red-500' : isFailed ? 'bg-red-500' : 'bg-yellow-500';
   const statusTitle = isSuccess
     ? (transaction.type === 'data' ? 'Data Purchase Successful' : 'Airtime Purchase Successful')
     : isFailed ? 'Transaction Failed' : 'Transaction Pending';
