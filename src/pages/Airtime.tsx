@@ -99,6 +99,12 @@ export default function Airtime() {
     fetchNetworks();
   }, []);
 
+  // Prefill last used phone number
+  useEffect(() => {
+    const saved = localStorage.getItem('lastAirtimePhone');
+    if (saved) setPhoneNumber(saved);
+  }, []);
+
   // Auto-detect network from phone number on step 2
   useEffect(() => {
     if (step !== 2 || networks.length === 0) return;
@@ -207,8 +213,8 @@ export default function Airtime() {
         amount: purchaseAmount,
         type: 'airtime',
       });
+      try { localStorage.setItem('lastAirtimePhone', normalizedPhone); } catch {}
       setShowReceipt(true);
-      setPhoneNumber('');
       setAmount('');
       setSelectedNetwork(null);
       setStep(1);
