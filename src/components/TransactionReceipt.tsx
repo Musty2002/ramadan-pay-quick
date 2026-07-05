@@ -334,7 +334,7 @@ ${transaction.type === 'data' && transaction.dataPlan ? `📦 Data Plan: ${trans
                 const isSuccess = effectiveStatus === 'completed';
                 const isFailed = effectiveStatus === 'failed';
                 const bannerGradient = isSuccess 
-                  ? 'from-green-500 to-emerald-500 shadow-green-500/20' 
+                  ? 'from-red-500 to-red-600 shadow-red-500/20' 
                   : isFailed 
                     ? 'from-red-500 to-red-600 shadow-red-500/20' 
                     : 'from-yellow-500 to-amber-500 shadow-yellow-500/20';
