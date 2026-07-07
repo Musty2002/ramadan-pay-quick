@@ -41,6 +41,7 @@ import Support from "./pages/Support";
 import Settings from "./pages/Settings";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import Receipt from "./pages/Receipt";
 
 
 // Admin Pages
