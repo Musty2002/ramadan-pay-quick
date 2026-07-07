@@ -104,11 +104,11 @@ export function AccountCard() {
   const isAccountReady = hasVirtualAccount && profile?.virtual_account_name;
   const storedBank = profile?.virtual_account_bank || "";
   const bankName = (() => {
-    if (storedBank.toLowerCase().includes("aspfiy")) return "Paga";
     if (storedBank.toLowerCase().includes("palmpay")) return "PalmPay";
-    return storedBank;
+    if (storedBank.toLowerCase().includes("aspfiy") || storedBank.toLowerCase().includes("paga")) return "PalmPay";
+    return storedBank || "PalmPay";
   })();
-  const accountName = "ASPFIY";
+  const accountName = profile?.virtual_account_name || profile?.full_name || "User";
 
   const canWithdrawCashback = (cashbackWallet?.balance || 0) >= 100;
 
