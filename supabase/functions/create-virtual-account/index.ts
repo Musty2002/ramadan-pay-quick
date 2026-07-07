@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
 
     const { data: existingProfile, error: profileLookupError } = await supabase
       .from("profiles")
-      .select("id, account_number, virtual_account_name, full_name, phone, email")
+      .select("id, account_number, virtual_account_name, virtual_account_bank, full_name, phone, email")
       .eq("user_id", userId)
       .maybeSingle();
 
