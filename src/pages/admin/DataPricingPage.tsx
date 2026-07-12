@@ -624,6 +624,22 @@ export default function DataPricingPage() {
                           placeholder="e.g., 30 days"
                         />
                       </div>
+                      <div>
+                        <Label>Provider</Label>
+                        <Select
+                          value={newBundle.provider}
+                          onValueChange={(v) => setNewBundle(prev => ({ ...prev, provider: v as 'rgc' | 'bonanza' }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {providers.map(p => (
+                              <SelectItem key={p.code} value={p.code}>{p.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <Label>API Price (₦)</Label>
@@ -778,6 +794,7 @@ export default function DataPricingPage() {
                     <TableRow>
                       <TableHead>Plan Code</TableHead>
                       <TableHead>Plan Name</TableHead>
+                      <TableHead>Validity</TableHead>
                       <TableHead>Category</TableHead>
                       <TableHead>Provider</TableHead>
                       <TableHead>API Price (₦)</TableHead>
@@ -796,12 +813,26 @@ export default function DataPricingPage() {
                       return (
                         <TableRow key={bundle.id} className={editedItems[bundle.id] ? 'bg-yellow-50' : ''}>
                           <TableCell className="font-mono text-sm">{bundle.plan_code}</TableCell>
-                          <TableCell className="font-medium">{bundle.plan_name}</TableCell>
+                          <TableCell className="font-medium">
+                            <Input
+                              className="w-40"
+                              value={(getDisplayValue(bundle, 'plan_name') as string) ?? ''}
+                              onChange={(e) => handleChange(bundle.id, 'plan_name', e.target.value)}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              className="w-28"
+                              value={(getDisplayValue(bundle, 'validity') as string) ?? ''}
+                              onChange={(e) => handleChange(bundle.id, 'validity', e.target.value)}
+                              placeholder="e.g. 30 days"
+                            />
+                          </TableCell>
                           <TableCell>
                             <Badge variant="outline">{bundle.data_type}</Badge>
                           </TableCell>
                           <TableCell>
-                            <Badge variant="secondary">RGC</Badge>
+                            <Badge variant="secondary">{(bundle.provider || 'rgc').toUpperCase()}</Badge>
                           </TableCell>
                           <TableCell className="text-muted-foreground">
                             {formatPrice(bundle.api_price)}
