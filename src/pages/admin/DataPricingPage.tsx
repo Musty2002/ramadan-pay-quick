@@ -742,7 +742,7 @@ export default function DataPricingPage() {
                           {formatPrice(parseFloat(bundle.amount))}
                         </TableCell>
                         <TableCell>
-                          <Badge variant="secondary">RGC</Badge>
+                          <Badge variant="secondary">{(bundle.provider || 'rgc').toUpperCase()}</Badge>
                         </TableCell>
                         <TableCell>
                           {bundle.available ? (
