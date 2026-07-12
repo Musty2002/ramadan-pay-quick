@@ -115,26 +115,31 @@ Deno.serve(async (req) => {
         const data = await bonanzaRequest('/user/');
         // Bonanza's user endpoint typically returns a MOBILE_NETWORK / Dataplans block
         const plans: any[] = [];
-        const raw = data?.Dataplans || data?.MOBILE_NETWORK || data?.mobile_network || {};
-        const networks = raw?.MOBILE_NETWORK || raw;
-        const walk = (netKey: string, arr: any[]) => {
-          arr?.forEach((p: any) => {
-            plans.push({
-              id: Number(p.dataplan_id || p.id),
-              product_id: Number(p.dataplan_id || p.id),
-              service: p.plan_type || 'DATA',
-              amount: String(p.plan_amount || p.amount || ''),
-              name: [p.plan, p.month_validate].filter(Boolean).join(' - '),
-              plan_size: p.plan,
-              validity: p.month_validate,
-              category: `${(p.plan_network || netKey || '').toUpperCase()} ${p.plan_type || ''}`.trim(),
-              available: true,
-              provider: 'bonanza',
-            });
+        const networks = data?.Dataplans || {};
+        const pushPlan = (netKey: string, p: any) => {
+          if (!p || (!p.dataplan_id && !p.id)) return;
+          plans.push({
+            id: Number(p.dataplan_id || p.id),
+            product_id: Number(p.dataplan_id || p.id),
+            service: p.plan_type || 'DATA',
+            amount: String(p.plan_amount || p.amount || ''),
+            name: [p.plan, p.month_validate].filter(Boolean).join(' - '),
+            plan_size: p.plan,
+            validity: p.month_validate,
+            category: `${(p.plan_network || netKey || '').toUpperCase().replace('_PLAN','')} ${p.plan_type || ''}`.trim(),
+            available: true,
+            provider: 'bonanza',
           });
         };
-        Object.entries(networks || {}).forEach(([k, v]) => {
-          if (Array.isArray(v)) walk(k, v as any[]);
+        // Structure: Dataplans.MTN_PLAN.{CORPORATE|SME|GIFTING}[]
+        Object.entries(networks).forEach(([netKey, group]: [string, any]) => {
+          if (Array.isArray(group)) {
+            group.forEach((p: any) => pushPlan(netKey, p));
+          } else if (group && typeof group === 'object') {
+            Object.values(group).forEach((arr: any) => {
+              if (Array.isArray(arr)) arr.forEach((p: any) => pushPlan(netKey, p));
+            });
+          }
         });
         return new Response(JSON.stringify({ success: true, data: plans, raw: data }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
