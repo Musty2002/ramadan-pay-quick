@@ -66,7 +66,9 @@ const CATEGORY_META: Record<string, { label: string; icon: any; color: string }>
   exam_pin: { label: 'Exam PIN', icon: GraduationCap, color: 'bg-pink-500' },
 };
 
-const PROFIT_CATEGORIES = ['data', 'airtime', 'electricity', 'tv', 'exam_pin'];
+const PROFIT_CATEGORIES = ['data', 'airtime', 'electricity', 'tv', 'exam_pin'] as const;
+// Categories that actually exist in the DB enum (exam_pin isn't in the enum yet).
+const QUERYABLE_CATEGORIES = ['data', 'airtime', 'electricity', 'tv'] as const;
 
 const money = (n: number) =>
   new Intl.NumberFormat('en-NG', {
@@ -143,7 +145,7 @@ export default function ProfitDashboard() {
         .from('transactions')
         .select('id, category, amount, status, metadata, created_at, description')
         .eq('status', 'completed')
-        .in('category', PROFIT_CATEGORIES);
+        .in('category', QUERYABLE_CATEGORIES as unknown as string[]);
       const rows = (data as Txn[]) || [];
       const totalProfit = rows.reduce(
         (s, t) => s + (Number(t.amount) - extractApiCost(t, bundleMap)),
@@ -162,7 +164,7 @@ export default function ProfitDashboard() {
         .select('id, category, amount, status, metadata, created_at, description')
         .gte('created_at', range.from.toISOString())
         .lte('created_at', range.to.toISOString())
-        .in('category', PROFIT_CATEGORIES)
+        .in('category', QUERYABLE_CATEGORIES as unknown as string[])
         .order('created_at', { ascending: false });
       if (error) throw error;
       setTxns((data as Txn[]) || []);
