@@ -228,7 +228,7 @@ Deno.serve(async (req) => {
         }
 
         const networkId = getNetworkId(body.network);
-        result = await bonanzaRequest('/airtime/', 'POST', {
+        result = await bonanzaRequest('/topup/', 'POST', {
           network: networkId,
           amount: String(amount),
           mobile_number: body.mobile_number,
